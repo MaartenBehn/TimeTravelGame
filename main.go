@@ -23,15 +23,16 @@ func init() {
 
 type Game struct {
 	m *Map
-
 }
+
 func (g *Game) Update() error {
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 
-	g.m.chunks[AxialPos{0,0}].DrawChunk(screen)
+	g.m.chunks[AxialPos{0, 0}].DrawChunk(screen)
+	g.m.chunks[AxialPos{0, 1}].DrawChunk(screen)
 
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
 }
@@ -47,7 +48,8 @@ func main() {
 		m: NewMap(),
 	}
 
-	g.m.GetChunk(AxialPos{0,0})
+	g.m.GetChunk(AxialPos{0, 0})
+	g.m.GetChunk(AxialPos{0, 1})
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
