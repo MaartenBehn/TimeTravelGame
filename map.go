@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/TimeTravelGame/TimeTravelGame/math"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
@@ -10,7 +11,7 @@ import (
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
 const chunkSizeR = 10 // The ammount of Tiles per Chunk R-axis.
 
-var tileSize = 10.0                    // Scaling factor for Tile size.
+var tileSize = 1.0                     // Scaling factor for Tile size.
 var tileHeigth = 2 * tileSize          // From Tutorial not uesd at the moment
 var tileWith = math.Sqrt(3) * tileSize // From Tutorial not uesd at the moment
 
@@ -113,12 +114,30 @@ func (m *Map) GetChunk(pos AxialPos) *Chunk {
 	return chunk
 }
 
-/*
-func (m *Map) GetTile(pos AxialPos) *Tile{
-	roundPos := pos.DivFloat(tileSize).Round()
+func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
+	roundPos := pos.DivFloat(tileSize * 2).Round()
+	chunkPos := roundPos.Div(AxialPos{chunkSizeQ, chunkSizeR}).Trunc()
 
+	if roundPos.Q < 0 && math.Mod(roundPos.Q, 10) != 0 {
+		chunkPos.Q -= 1
+	}
+
+	if roundPos.R < 0 && math.Mod(roundPos.R, 10) != 0 {
+		chunkPos.R -= 1
+	}
+
+	tilePos := roundPos.Sub(chunkPos.Mul(AxialPos{chunkSizeQ, chunkSizeR}))
+
+	chunk := m.GetChunk(chunkPos)
+	i := index(int(tilePos.Q), int(tilePos.R))
+	if i >= 100 || i < 0 {
+		fmt.Print("error")
+	}
+
+	tile := &chunk.tiles[i]
+
+	return tile, chunk
 }
-*/
 
 // DrawTile draws the haxgon for the Tile
 func (t Tile) DrawTile(screen *ebiten.Image) {

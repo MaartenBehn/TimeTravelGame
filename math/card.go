@@ -36,3 +36,7 @@ func (c CardPos) Div(b CardPos) CardPos {
 func (c CardPos) DivFloat(b float64) CardPos {
 	return CardPos{c.X / b, c.Y / b}
 }
+
+func (c CardPos) ToAxial() AxialPos {
+	return AxialPos{c.Y - (2.0/3.0)*c.X, (4.0 / 3.0) * c.X}
+}

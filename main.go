@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 	"log"
+	"runtime/debug"
 )
 
 const (
@@ -27,15 +28,33 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+
+	mouseX, mouseY := ebiten.CursorPosition()
+
+	tile, _ := g.m.Get(CardPos{X: float64(mouseX), Y: float64(mouseY)}.ToAxial())
+
+	tile.vertices[0].ColorA = 1
+
+	if panicInfo := recover(); panicInfo != nil {
+		fmt.Printf("%v, %s", panicInfo, string(debug.Stack()))
+	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 
-	g.m.chunks[AxialPos{0, 0}].DrawChunk(screen)
-	g.m.chunks[AxialPos{0, 1}].DrawChunk(screen)
+	for _, chunk := range g.m.chunks {
+		chunk.DrawChunk(screen)
+	}
 
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f", ebiten.CurrentTPS(), ebiten.CurrentFPS()))
+	mouseX, mouseY := ebiten.CursorPosition()
+	axialPos := CardPos{float64(mouseX), float64(mouseY)}.ToAxial()
+	roundPos := axialPos.DivFloat(tileSize * 2).Round()
+
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f\nPos: %d, %d\nAxi: %f, %f\n",
+		ebiten.CurrentTPS(), ebiten.CurrentFPS(), mouseX, mouseY, roundPos.Q, roundPos.R))
+
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight

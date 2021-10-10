@@ -38,6 +38,10 @@ func (a AxialPos) DivFloat(b float64) AxialPos {
 	return AxialPos{a.Q / b, a.R / b}
 }
 
+func (a AxialPos) Trunc() AxialPos {
+	return AxialPos{math.Trunc(a.Q), math.Trunc(a.R)}
+}
+
 func (a AxialPos) ToCube() CubePos {
 	return CubePos{
 		X: a.Q,
@@ -72,5 +76,11 @@ func (a AxialPos) Distance(b AxialPos) float64 {
 }
 
 func (a AxialPos) Round() AxialPos {
+	return AxialPos{Q: math.Round(a.Q), R: math.Round(a.R)}
+}
+
+/*
+func (a AxialPos) Round() AxialPos {
 	return a.ToCube().Round().ToAxial()
 }
+*/
