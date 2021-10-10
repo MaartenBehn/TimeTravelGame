@@ -1,6 +1,7 @@
 package main
 
 import (
+	. "github.com/TimeTravelGame/TimeTravelGame/math"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"math"
@@ -9,7 +10,7 @@ import (
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
 const chunkSizeR = 10 // The ammount of Tiles per Chunk R-axis.
 
-var tileSize = 100.0                   // Scaling factor for Tile size.
+var tileSize = 10.0                    // Scaling factor for Tile size.
 var tileHeigth = 2 * tileSize          // From Tutorial not uesd at the moment
 var tileWith = math.Sqrt(3) * tileSize // From Tutorial not uesd at the moment
 
@@ -34,8 +35,14 @@ var tileIndecies = []uint16{
 	0, 6, 1,
 }
 
+type TileSettings struct {
+	isWalkable bool
+}
+
 type Tile struct {
+	TileSettings
 	pos      CardPos
+	chunk    *Chunk
 	vertices []ebiten.Vertex
 }
 
@@ -49,37 +56,40 @@ type Map struct {
 }
 
 // Converts a 2D tile index to 1D a index.
-func index(x int, y int) int {
-	return y + x*chunkSizeQ
+func index(q int, r int) int {
+	return q + r*chunkSizeQ
 }
 
 // Converts a 1D tile index to a 2D index.
-func reverseIndex(i int) (x int, y int) {
-	return i / chunkSizeQ, i % chunkSizeQ
+func reverseIndex(i int) (q int, r int) {
+	return i % chunkSizeQ, i / chunkSizeQ
+}
+
+func NewTile(q int, r int, chunk *Chunk) (tile Tile) {
+	tile.pos = AxialPos{Q: float64(q), R: float64(r)}.MulFloat(tileSize * 2).ToCard()
+
+	tile.vertices = make([]ebiten.Vertex, len(tileVertices))
+	for j, vertex := range tileVertices {
+		vertex.DstX += float32(tile.pos.X + chunk.pos.X)
+		vertex.DstY += float32(tile.pos.Y + chunk.pos.Y)
+
+		vertex.ColorA = float32(index(q, r)) / float32(len(chunk.tiles))
+		tile.vertices[j] = vertex
+	}
+	tile.vertices[0].ColorA -= 0.1
+	return tile
 }
 
 // NewChunk is the init function for Chunk
 func NewChunk(pos AxialPos) *Chunk {
 	chunk := &Chunk{
-		pos:   AxialtoCard(AxialPos{pos.q * tileSize * chunkSizeQ * 2, pos.r * tileSize * chunkSizeR * 2}),
+		pos:   pos.MulFloat(tileSize * chunkSizeQ * 2).ToCard(),
 		tiles: make([]Tile, chunkSizeQ*chunkSizeR),
 	}
 
-	for i, tile := range chunk.tiles {
-		x, y := reverseIndex(i)
-		tile.pos = AxialtoCard(AxialPos{float64(x) * tileSize * 2, float64(y) * tileSize * 2})
-
-		tile.vertices = make([]ebiten.Vertex, len(tileVertices))
-		for j, vertex := range tileVertices {
-			vertex.DstX += float32(tile.pos.x + chunk.pos.x)
-			vertex.DstY += float32(tile.pos.y + chunk.pos.y)
-
-			vertex.ColorA = float32(i) / float32(len(chunk.tiles))
-			tile.vertices[j] = vertex
-		}
-		tile.vertices[0].ColorA -= 0.1
-
-		chunk.tiles[i] = tile
+	for i, _ := range chunk.tiles {
+		q, r := reverseIndex(i)
+		chunk.tiles[i] = NewTile(q, r, chunk)
 	}
 
 	return chunk
@@ -102,6 +112,13 @@ func (m *Map) GetChunk(pos AxialPos) *Chunk {
 	}
 	return chunk
 }
+
+/*
+func (m *Map) GetTile(pos AxialPos) *Tile{
+	roundPos := pos.DivFloat(tileSize).Round()
+
+}
+*/
 
 // DrawTile draws the haxgon for the Tile
 func (t Tile) DrawTile(screen *ebiten.Image) {
