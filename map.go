@@ -11,7 +11,7 @@ import (
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
 const chunkSizeR = 10 // The ammount of Tiles per Chunk R-axis.
 
-var tileSize = 1.0                     // Scaling factor for Tile size.
+var tileSize = 10.0                    // Scaling factor for Tile size.
 var tileHeigth = 2 * tileSize          // From Tutorial not uesd at the moment
 var tileWith = math.Sqrt(3) * tileSize // From Tutorial not uesd at the moment
 

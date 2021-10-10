@@ -68,9 +68,6 @@ func main() {
 		m: NewMap(),
 	}
 
-	g.m.GetChunk(AxialPos{0, 0})
-	g.m.GetChunk(AxialPos{0, 1})
-
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
