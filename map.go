@@ -53,7 +53,8 @@ type Chunk struct {
 }
 
 type Map struct {
-	chunks map[AxialPos]*Chunk
+	chunks   map[AxialPos]*Chunk
+	mapImage *ebiten.Image
 }
 
 // Converts a 2D tile index to 1D a index.
@@ -97,9 +98,10 @@ func NewChunk(pos AxialPos) *Chunk {
 }
 
 // NewMap is the init func for a new Map
-func NewMap() *Map {
+func NewMap(size CardPos) *Map {
 	return &Map{
-		chunks: map[AxialPos]*Chunk{},
+		chunks:   map[AxialPos]*Chunk{},
+		mapImage: ebiten.NewImage(int(size.X), int(size.Y)),
 	}
 }
 
@@ -140,17 +142,32 @@ func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
 }
 
 // DrawTile draws the haxgon for the Tile
-func (t Tile) DrawTile(screen *ebiten.Image) {
+func (t Tile) DrawTile(img *ebiten.Image) {
 
 	op := &ebiten.DrawTrianglesOptions{}
 	op.Address = ebiten.AddressUnsafe
 
-	screen.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
+	img.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
 }
 
 // DrawChunk draws the chunk
-func (c *Chunk) DrawChunk(screen *ebiten.Image) {
+func (c *Chunk) DrawChunk(img *ebiten.Image) {
 	for _, tile := range c.tiles {
-		tile.DrawTile(screen)
+		tile.DrawTile(img)
+	}
+}
+
+func (m *Map) DrawMap(img *ebiten.Image, cam *Camera) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM = *cam.matrix
+
+	img.DrawImage(m.mapImage, op)
+}
+
+func (m *Map) Update() {
+	m.mapImage.Clear()
+
+	for _, chunk := range m.chunks {
+		chunk.DrawChunk(m.mapImage)
 	}
 }

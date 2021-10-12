@@ -7,7 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 	"log"
-	"runtime/debug"
 )
 
 const (
@@ -24,36 +23,38 @@ func init() {
 }
 
 type Game struct {
-	m *Map
+	m   *Map
+	cam *Camera
 }
 
 func (g *Game) Update() error {
 
 	mouseX, mouseY := ebiten.CursorPosition()
+	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	tile, _ := g.m.Get(CardPos{X: float64(mouseX), Y: float64(mouseY)}.ToAxial())
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 
-	tile.vertices[0].ColorA = 1
+		mapPos := CardPos{}
+		mat := *g.cam.matrix
+		mat.Invert()
+		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
 
-	if panicInfo := recover(); panicInfo != nil {
-		fmt.Printf("%v, %s", panicInfo, string(debug.Stack()))
+		tile, _ := g.m.Get(mapPos.ToAxial())
+		tile.vertices[0].ColorA = 1
+		g.m.Update()
 	}
+
+	g.cam.UpdateInput()
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 
-	for _, chunk := range g.m.chunks {
-		chunk.DrawChunk(screen)
-	}
+	g.m.DrawMap(screen, g.cam)
 
-	mouseX, mouseY := ebiten.CursorPosition()
-	axialPos := CardPos{float64(mouseX), float64(mouseY)}.ToAxial()
-	roundPos := axialPos.DivFloat(tileSize * 2).Round()
-
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f\nPos: %d, %d\nAxi: %f, %f\n",
-		ebiten.CurrentTPS(), ebiten.CurrentFPS(), mouseX, mouseY, roundPos.Q, roundPos.R))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f\n",
+		ebiten.CurrentTPS(), ebiten.CurrentFPS()))
 
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -65,7 +66,8 @@ func main() {
 	ebiten.SetWindowTitle("Time Travel Game")
 
 	g := &Game{
-		m: NewMap(),
+		m:   NewMap(CardPos{500, 500}),
+		cam: NewCamera(),
 	}
 
 	if err := ebiten.RunGame(g); err != nil {
