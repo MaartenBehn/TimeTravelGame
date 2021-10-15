@@ -67,7 +67,7 @@ func main() {
 
 	g := &Game{
 		m:   NewMap(CardPos{500, 500}),
-		cam: NewCamera(),
+		cam: NewCamera(CardPos{-100,-100}, CardPos{1000, 1000}, CardPos{0,0}, CardPos{10,10}),
 	}
 
 	if err := ebiten.RunGame(g); err != nil {
