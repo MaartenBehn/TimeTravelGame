@@ -6,12 +6,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"math"
+	"math/rand"
 )
 
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
 const chunkSizeR = 10 // The ammount of Tiles per Chunk R-axis.
 
-var tileSize = 10.0                    // Scaling factor for Tile size.
+var tileSize = 10.0                    // Scaling factor for Tile Size.
 var tileHeigth = 2 * tileSize          // From Tutorial not uesd at the moment
 var tileWith = math.Sqrt(3) * tileSize // From Tutorial not uesd at the moment
 
@@ -37,23 +38,28 @@ var tileIndecies = []uint16{
 }
 
 type TileSettings struct {
-	isWalkable bool
+	IsWalkable bool
 }
 
 type Tile struct {
 	TileSettings
-	pos      CardPos
+	Pos      CardPos
+	ChunkPos AxialPos
+
 	chunk    *Chunk
 	vertices []ebiten.Vertex
 }
 
 type Chunk struct {
-	pos   CardPos
-	tiles []Tile
+	Pos      CardPos
+	AxialPos AxialPos
+	Tiles    []Tile
 }
 
 type Map struct {
-	chunks   map[AxialPos]*Chunk
+	Size   CardPos
+	Chunks map[AxialPos]*Chunk
+
 	mapImage *ebiten.Image
 }
 
@@ -68,30 +74,36 @@ func reverseIndex(i int) (q int, r int) {
 }
 
 func NewTile(q int, r int, chunk *Chunk) (tile Tile) {
-	tile.pos = AxialPos{Q: float64(q), R: float64(r)}.MulFloat(tileSize * 2).ToCard()
-
-	tile.vertices = make([]ebiten.Vertex, len(tileVertices))
-	for j, vertex := range tileVertices {
-		vertex.DstX += float32(tile.pos.X + chunk.pos.X)
-		vertex.DstY += float32(tile.pos.Y + chunk.pos.Y)
-
-		vertex.ColorA = float32(index(q, r)) / float32(len(chunk.tiles))
-		tile.vertices[j] = vertex
-	}
-	tile.vertices[0].ColorA -= 0.1
+	tile.Pos = AxialPos{Q: float64(q), R: float64(r)}.MulFloat(tileSize * 2).ToCard()
+	tile.ChunkPos = chunk.AxialPos
+	tile.chunk = chunk
+	tile.createVertices()
 	return tile
+}
+
+func (t *Tile) createVertices() {
+	t.vertices = make([]ebiten.Vertex, len(tileVertices))
+	for j, vertex := range tileVertices {
+		vertex.DstX += float32(t.Pos.X + t.chunk.Pos.X)
+		vertex.DstY += float32(t.Pos.Y + t.chunk.Pos.Y)
+
+		vertex.ColorA = rand.Float32()
+		t.vertices[j] = vertex
+	}
+	t.vertices[0].ColorA -= 0.1
 }
 
 // NewChunk is the init function for Chunk
 func NewChunk(pos AxialPos) *Chunk {
 	chunk := &Chunk{
-		pos:   pos.MulFloat(tileSize * chunkSizeQ * 2).ToCard(),
-		tiles: make([]Tile, chunkSizeQ*chunkSizeR),
+		AxialPos: pos,
+		Pos:      pos.MulFloat(tileSize * chunkSizeQ * 2).ToCard(),
+		Tiles:    make([]Tile, chunkSizeQ*chunkSizeR),
 	}
 
-	for i, _ := range chunk.tiles {
+	for i, _ := range chunk.Tiles {
 		q, r := reverseIndex(i)
-		chunk.tiles[i] = NewTile(q, r, chunk)
+		chunk.Tiles[i] = NewTile(q, r, chunk)
 	}
 
 	return chunk
@@ -100,18 +112,19 @@ func NewChunk(pos AxialPos) *Chunk {
 // NewMap is the init func for a new Map
 func NewMap(size CardPos) *Map {
 	return &Map{
-		chunks:   map[AxialPos]*Chunk{},
+		Size:     size,
+		Chunks:   map[AxialPos]*Chunk{},
 		mapImage: ebiten.NewImage(int(size.X), int(size.Y)),
 	}
 }
 
-// GetChunk returns the Chunk for at the corresponding pos.
+// GetChunk returns the Chunk for at the corresponding Pos.
 // It creates a new Chunk when the Chunk is nill
 func (m *Map) GetChunk(pos AxialPos) *Chunk {
-	chunk := m.chunks[pos]
+	chunk := m.Chunks[pos]
 	if chunk == nil {
 		chunk = NewChunk(pos)
-		m.chunks[pos] = chunk
+		m.Chunks[pos] = chunk
 	}
 	return chunk
 }
@@ -136,12 +149,12 @@ func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
 		fmt.Print("error")
 	}
 
-	tile := &chunk.tiles[i]
+	tile := &chunk.Tiles[i]
 
 	return tile, chunk
 }
 
-// DrawTile draws the haxgon for the Tile
+// DrawTile draws the hexagon for the Tile
 func (t Tile) DrawTile(img *ebiten.Image) {
 
 	op := &ebiten.DrawTrianglesOptions{}
@@ -150,9 +163,9 @@ func (t Tile) DrawTile(img *ebiten.Image) {
 	img.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
 }
 
-// DrawChunk draws the chunk
+// DrawChunk draws the Chunk
 func (c *Chunk) DrawChunk(img *ebiten.Image) {
-	for _, tile := range c.tiles {
+	for _, tile := range c.Tiles {
 		tile.DrawTile(img)
 	}
 }
@@ -167,7 +180,7 @@ func (m *Map) DrawMap(img *ebiten.Image, cam *Camera) {
 func (m *Map) Update() {
 	m.mapImage.Clear()
 
-	for _, chunk := range m.chunks {
+	for _, chunk := range m.Chunks {
 		chunk.DrawChunk(m.mapImage)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 	"log"
+	"runtime/debug"
 )
 
 const (
@@ -25,18 +26,20 @@ func init() {
 type Game struct {
 	m   *Map
 	cam *Camera
+	u   *UnitController
 }
 
 func (g *Game) Update() error {
+	defer ebitenErrorHandle()
 
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-
 		mapPos := CardPos{}
 		mat := *g.cam.matrix
 		mat.Invert()
+
 		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
 
 		tile, _ := g.m.Get(mapPos.ToAxial())
@@ -46,10 +49,16 @@ func (g *Game) Update() error {
 
 	g.cam.UpdateInput()
 
+	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		data := g.m.Save()
+		saveMapBufferToFile("test", data)
+	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	defer ebitenErrorHandle()
 
 	g.m.DrawMap(screen, g.cam)
 
@@ -58,19 +67,46 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	defer ebitenErrorHandle()
+
 	return screenWidth, screenHeight
 }
+
+const loadMap = true
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Time Travel Game")
 
+	bounds := CardPos{500, 500}
+
+	var m *Map
+	if loadMap {
+		m = LoadMap(loadMapBufferFromFile("test"))
+	} else {
+		m = NewMap(CardPos{500, 500})
+	}
+
 	g := &Game{
-		m:   NewMap(CardPos{500, 500}),
-		cam: NewCamera(CardPos{-100,-100}, CardPos{1000, 1000}, CardPos{0,0}, CardPos{10,10}),
+		m:   m,
+		cam: NewCamera(CardPos{0, 0}, bounds, CardPos{1, 1}, CardPos{10, 10}),
+		u:   NewUnitController(4),
 	}
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func ebitenErrorHandle() {
+	if err := recover(); err != nil {
+		fmt.Println(err)
+		debug.PrintStack()
+	}
+}
+
+func checkErr(e error) {
+	if e != nil {
+		panic(e)
 	}
 }

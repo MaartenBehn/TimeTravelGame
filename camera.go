@@ -6,10 +6,9 @@ import (
 )
 
 type Camera struct {
-
-	pos      CardPos
-	minPos   CardPos
-	maxPos 	 CardPos
+	pos    CardPos
+	minPos CardPos
+	maxPos CardPos
 
 	scale    CardPos
 	minScale CardPos
@@ -22,7 +21,7 @@ type Camera struct {
 func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPos) *Camera {
 	cam := &Camera{
 
-		pos:      CardPos{0, 0},
+		pos:    CardPos{0, 0},
 		minPos: minPos,
 		maxPos: maxPos,
 
@@ -37,39 +36,42 @@ func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPo
 	return cam
 }
 
+// Updates Cam.matrix
 func (c *Camera) updateMatrix() {
 	c.matrix.Reset()
 	c.matrix.Rotate(c.rotation)
-	c.matrix.Translate(c.pos.X * -1, c.pos.Y * -1)
+	c.matrix.Translate(c.pos.X*-1, c.pos.Y*-1)
 	c.matrix.Scale(c.scale.X, c.scale.Y)
 }
 
-func (c *Camera) bounds(){
-	if c.pos.X < c.minPos.X{
+// Restes the Cam to the set bounds.
+func (c *Camera) bounds() {
+	if c.pos.X < c.minPos.X {
 		c.pos.X = c.minPos.X
-	}else if c.pos.X > c.maxPos.X{
+	} else if c.pos.X > c.maxPos.X {
 		c.pos.X = c.maxPos.X
 	}
 
-	if c.pos.Y < c.minPos.Y{
+	if c.pos.Y < c.minPos.Y {
 		c.pos.Y = c.minPos.Y
-	}else if c.pos.Y > c.maxPos.Y{
+	} else if c.pos.Y > c.maxPos.Y {
 		c.pos.Y = c.maxPos.Y
 	}
 
-	if c.scale.X < c.minScale.X{
+	if c.scale.X < c.minScale.X {
 		c.scale.X = c.minScale.X
-	}else if c.scale.X > c.maxScale.X{
+	} else if c.scale.X > c.maxScale.X {
 		c.scale.X = c.maxScale.X
 	}
 
-	if c.scale.Y < c.minScale.Y{
+	if c.scale.Y < c.minScale.Y {
 		c.scale.Y = c.minScale.Y
-	}else if c.scale.Y > c.maxScale.Y{
+	} else if c.scale.Y > c.maxScale.Y {
 		c.scale.Y = c.maxScale.Y
 	}
 }
 
+// Applies user Input to Cam
 func (c *Camera) UpdateInput() {
 
 	needMatrixUpdate := false
@@ -100,5 +102,3 @@ func (c *Camera) UpdateInput() {
 		c.updateMatrix()
 	}
 }
-
-
