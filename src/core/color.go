@@ -1,6 +1,8 @@
-package main
+package core
 
-import "math"
+import (
+	"math"
+)
 
 type Color struct {
 	r uint32
