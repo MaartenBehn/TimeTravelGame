@@ -1,12 +1,12 @@
 package core
 
 import (
-	"github.com/TimeTravelGame/TimeTravelGame/src/math"
+	. "github.com/Stroby241/TimeTravelGame/src/math"
 )
 
 type Unit struct {
 	tile *Tile
-	Pos  math.AxialPos
+	Pos  AxialPos
 }
 
 type Faction struct {

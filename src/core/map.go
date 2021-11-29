@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	math2 "github.com/TimeTravelGame/TimeTravelGame/src/math"
+	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"math"
@@ -43,22 +43,22 @@ type TileSettings struct {
 
 type Tile struct {
 	TileSettings
-	Pos      math2.CardPos
-	ChunkPos math2.AxialPos
+	Pos      CardPos
+	ChunkPos AxialPos
 
 	chunk    *Chunk
 	vertices []ebiten.Vertex
 }
 
 type Chunk struct {
-	Pos      math2.CardPos
-	AxialPos math2.AxialPos
+	Pos      CardPos
+	AxialPos AxialPos
 	Tiles    []Tile
 }
 
 type Map struct {
-	Size   math2.CardPos
-	Chunks map[math2.AxialPos]*Chunk
+	Size   CardPos
+	Chunks map[AxialPos]*Chunk
 
 	mapImage *ebiten.Image
 }
@@ -74,7 +74,7 @@ func reverseIndex(i int) (q int, r int) {
 }
 
 func NewTile(q int, r int, chunk *Chunk) (tile Tile) {
-	tile.Pos = math2.AxialPos{Q: float64(q), R: float64(r)}.MulFloat(tileSize * 2).ToCard()
+	tile.Pos = AxialPos{Q: float64(q), R: float64(r)}.MulFloat(tileSize * 2).ToCard()
 	tile.ChunkPos = chunk.AxialPos
 	tile.chunk = chunk
 	tile.createVertices()
@@ -94,7 +94,7 @@ func (t *Tile) createVertices() {
 }
 
 // NewChunk is the init function for Chunk
-func NewChunk(pos math2.AxialPos) *Chunk {
+func NewChunk(pos AxialPos) *Chunk {
 	chunk := &Chunk{
 		AxialPos: pos,
 		Pos:      pos.MulFloat(tileSize * chunkSizeQ * 2).ToCard(),
@@ -110,17 +110,17 @@ func NewChunk(pos math2.AxialPos) *Chunk {
 }
 
 // NewMap is the init func for a new Map
-func NewMap(size math2.CardPos) *Map {
+func NewMap(size CardPos) *Map {
 	return &Map{
 		Size:     size,
-		Chunks:   map[math2.AxialPos]*Chunk{},
+		Chunks:   map[AxialPos]*Chunk{},
 		mapImage: ebiten.NewImage(int(size.X), int(size.Y)),
 	}
 }
 
 // GetChunk returns the Chunk for at the corresponding Pos.
 // It creates a new Chunk when the Chunk is nill
-func (m *Map) GetChunk(pos math2.AxialPos) *Chunk {
+func (m *Map) GetChunk(pos AxialPos) *Chunk {
 	chunk := m.Chunks[pos]
 	if chunk == nil {
 		chunk = NewChunk(pos)
@@ -129,9 +129,9 @@ func (m *Map) GetChunk(pos math2.AxialPos) *Chunk {
 	return chunk
 }
 
-func (m *Map) Get(pos math2.AxialPos) (*Tile, *Chunk) {
+func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
 	roundPos := pos.DivFloat(tileSize * 2).Round()
-	chunkPos := roundPos.Div(math2.AxialPos{chunkSizeQ, chunkSizeR}).Trunc()
+	chunkPos := roundPos.Div(AxialPos{chunkSizeQ, chunkSizeR}).Trunc()
 
 	if roundPos.Q < 0 && math.Mod(roundPos.Q, 10) != 0 {
 		chunkPos.Q -= 1
@@ -141,7 +141,7 @@ func (m *Map) Get(pos math2.AxialPos) (*Tile, *Chunk) {
 		chunkPos.R -= 1
 	}
 
-	tilePos := roundPos.Sub(chunkPos.Mul(math2.AxialPos{chunkSizeQ, chunkSizeR}))
+	tilePos := roundPos.Sub(chunkPos.Mul(AxialPos{chunkSizeQ, chunkSizeR}))
 
 	chunk := m.GetChunk(chunkPos)
 	i := index(int(tilePos.Q), int(tilePos.R))

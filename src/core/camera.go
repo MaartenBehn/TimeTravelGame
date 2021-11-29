@@ -1,31 +1,31 @@
 package core
 
 import (
-	"github.com/TimeTravelGame/TimeTravelGame/src/math"
+	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Camera struct {
-	pos    math.CardPos
-	minPos math.CardPos
-	maxPos math.CardPos
+	pos    CardPos
+	minPos CardPos
+	maxPos CardPos
 
-	scale    math.CardPos
-	minScale math.CardPos
-	maxScale math.CardPos
+	scale    CardPos
+	minScale CardPos
+	maxScale CardPos
 
 	rotation float64
 	matrix   *ebiten.GeoM
 }
 
-func NewCamera(minPos math.CardPos, maxPos math.CardPos, minScale math.CardPos, maxScale math.CardPos) *Camera {
+func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPos) *Camera {
 	cam := &Camera{
 
-		pos:    math.CardPos{0, 0},
+		pos:    CardPos{0, 0},
 		minPos: minPos,
 		maxPos: maxPos,
 
-		scale:    math.CardPos{5, 5},
+		scale:    CardPos{5, 5},
 		minScale: minScale,
 		maxScale: maxScale,
 
@@ -76,18 +76,18 @@ func (c *Camera) UpdateInput() {
 
 	needMatrixUpdate := false
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		c.pos = c.pos.Add(math.CardPos{0, -1})
+		c.pos = c.pos.Add(CardPos{0, -1})
 		needMatrixUpdate = true
 	} else if ebiten.IsKeyPressed(ebiten.KeyS) {
-		c.pos = c.pos.Add(math.CardPos{0, 1})
+		c.pos = c.pos.Add(CardPos{0, 1})
 		needMatrixUpdate = true
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		c.pos = c.pos.Add(math.CardPos{-1, 0})
+		c.pos = c.pos.Add(CardPos{-1, 0})
 		needMatrixUpdate = true
 	} else if ebiten.IsKeyPressed(ebiten.KeyD) {
-		c.pos = c.pos.Add(math.CardPos{1, 0})
+		c.pos = c.pos.Add(CardPos{1, 0})
 		needMatrixUpdate = true
 	}
 

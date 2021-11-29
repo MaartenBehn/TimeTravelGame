@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"github.com/TimeTravelGame/TimeTravelGame/src/math"
+	"github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/blizzy78/ebitenui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"

@@ -1,7 +1,7 @@
 package core
 
 import (
-	. "github.com/TimeTravelGame/TimeTravelGame/src/math"
+	. "github.com/Stroby241/TimeTravelGame/src/math"
 
 	"github.com/blizzy78/ebitenui/widget"
 )

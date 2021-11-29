@@ -1,4 +1,4 @@
-module github.com/TimeTravelGame/TimeTravelGame
+module github.com/Stroby241/TimeTravelGame
 
 go 1.16
 
