@@ -29,6 +29,10 @@ func saveMap(name string) {
 }
 
 func loadMap(name string) {
-	m := LoadMap(loadMapBufferFromFile(name))
+	buffer := loadMapBufferFromFile(name)
+	if buffer == nil {
+		return
+	}
+	m := LoadMap(buffer)
 	g.m = m
 }

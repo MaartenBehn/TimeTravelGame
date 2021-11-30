@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 )
 
@@ -24,7 +25,10 @@ func saveMapBufferToFile(name string, buffer *bytes.Buffer) {
 
 func loadBufferFromFile(path string) *bytes.Buffer {
 	buf, err := os.ReadFile(path)
-	checkErr(err)
+	if err != nil {
+		fmt.Printf("File %s not found.", path)
+		return nil
+	}
 	return bytes.NewBuffer(buf)
 }
 

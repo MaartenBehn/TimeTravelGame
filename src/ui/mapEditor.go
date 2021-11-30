@@ -1,40 +1,33 @@
 package ui
 
 import (
-	"fmt"
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/blizzy78/ebitenui"
-	"github.com/hajimehoshi/ebiten/v2"
 	"image"
+	"strconv"
 
 	"github.com/blizzy78/ebitenui/widget"
 )
 
 func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSizeLocateableWidget {
+
 	c := widget.NewContainer(
-		widget.ContainerOpts.Layout(
-			widget.NewRowLayout(
-				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			),
-		),
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(5)),
+		)),
 	)
 
 	c1 := widget.NewContainer(
-		widget.ContainerOpts.Layout(
-			widget.NewRowLayout(
-				widget.RowLayoutOpts.Direction(widget.DirectionHorizontal),
-				widget.RowLayoutOpts.Spacing(10),
-				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(5))),
-		),
-		widget.ContainerOpts.BackgroundImage(res.background),
+		widget.ContainerOpts.BackgroundImage(res.panel.image),
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionHorizontal),
+			widget.RowLayoutOpts.Padding(res.panel.padding),
+			widget.RowLayoutOpts.Spacing(15),
+		)),
 	)
 	c.AddChild(c1)
-
-	// Debug Print Spacer
-	c1.AddChild(widget.NewLabel(
-		widget.LabelOpts.Text("           ", res.text.face, res.label.text)),
-	)
 
 	c1.AddChild(widget.NewLabel(
 		widget.LabelOpts.Text("Map Editor", res.text.face, res.label.text)),
@@ -45,7 +38,7 @@ func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredS
 		widget.ButtonOpts.Text("New Map", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			event.Go(event.EventEditorNewMap, CardPos{500, 500})
+			openNewMapPopUp(res, ui)
 		}),
 	))
 
@@ -54,7 +47,7 @@ func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredS
 		widget.ButtonOpts.Text("Save Map", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			openNewMapWindow(res, ui)
+			openSaveMapPopUp(res, ui)
 		}),
 	))
 
@@ -63,14 +56,14 @@ func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredS
 		widget.ButtonOpts.Text("Load Map", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			event.Go(event.EventEditorLoadMap, "test")
+			openLoadMapPopUp(res, ui)
 		}),
 	))
 
 	return c
 }
 
-func openNewMapWindow(res *uiResources, ui func() *ebitenui.UI) {
+func openMapEditorPopUp(res *uiResources, ui func() *ebitenui.UI, name string, textPlaceholder string, f func(text string) bool, horizontalPos int) {
 	var rw ebitenui.RemoveWindowFunc
 
 	c := widget.NewContainer(
@@ -83,10 +76,10 @@ func openNewMapWindow(res *uiResources, ui func() *ebitenui.UI) {
 	)
 
 	c.AddChild(widget.NewText(
-		widget.TextOpts.Text("Save", res.text.bigTitleFace, res.text.idleColor),
+		widget.TextOpts.Text(name, res.text.bigTitleFace, res.text.idleColor),
 	))
 
-	c.AddChild(widget.NewTextInput(
+	text := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 			Stretch: true,
 		})),
@@ -102,18 +95,34 @@ func openNewMapWindow(res *uiResources, ui func() *ebitenui.UI) {
 		widget.TextInputOpts.CaretOpts(
 			widget.CaretOpts.Size(res.textInput.face, 2),
 		),
-		widget.TextInputOpts.Placeholder("Enter text here"),
-		widget.TextInputOpts.ChangedHandler(func(args *widget.TextInputChangedEventArgs) {
-			fmt.Println(args)
+		widget.TextInputOpts.Placeholder(textPlaceholder),
+	)
+	c.AddChild(text)
+
+	c1 := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionHorizontal),
+			widget.RowLayoutOpts.Spacing(10),
+		)),
+	)
+	c.AddChild(c1)
+
+	c1.AddChild(widget.NewButton(
+		widget.ButtonOpts.Image(res.button.image),
+		widget.ButtonOpts.TextPadding(res.button.padding),
+		widget.ButtonOpts.Text(name, res.button.face, res.button.text),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			if f(text.InputText) {
+				rw()
+			}
 		}),
 	))
 
-	c.AddChild(widget.NewButton(
+	c1.AddChild(widget.NewButton(
 		widget.ButtonOpts.Image(res.button.image),
 		widget.ButtonOpts.TextPadding(res.button.padding),
-		widget.ButtonOpts.Text("Save", res.button.face, res.button.text),
+		widget.ButtonOpts.Text("Cancel", res.button.face, res.button.text),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			event.Go(event.EventEditorSaveMap, "test")
 			rw()
 		}),
 	))
@@ -123,10 +132,35 @@ func openNewMapWindow(res *uiResources, ui func() *ebitenui.UI) {
 		widget.WindowOpts.Contents(c),
 	)
 
-	ww, wh := ebiten.WindowSize()
-	r := image.Rect(0, 0, ww/2, wh/2)
-	r = r.Add(image.Point{ww * 4 / 10, wh / 2 / 2})
+	r := image.Rect(0, 0, 400, 200)
+	r = r.Add(image.Point{horizontalPos, 100})
 	w.SetLocation(r)
 
 	rw = ui().AddWindow(w)
+	text.Focus(true)
+}
+
+func openNewMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
+	openMapEditorPopUp(res, ui, "New Map", "Set Map Size", func(text string) bool {
+		x, err := strconv.Atoi(text)
+		if err != nil {
+			return false
+		}
+		event.Go(event.EventEditorNewMap, CardPos{float64(x), float64(x)})
+		return true
+	}, 120)
+}
+
+func openSaveMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
+	openMapEditorPopUp(res, ui, "Save", "Set Name", func(text string) bool {
+		event.Go(event.EventEditorSaveMap, text)
+		return true
+	}, 280)
+}
+
+func openLoadMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
+	openMapEditorPopUp(res, ui, "Load", "Set Name", func(text string) bool {
+		event.Go(event.EventEditorLoadMap, text)
+		return true
+	}, 430)
 }

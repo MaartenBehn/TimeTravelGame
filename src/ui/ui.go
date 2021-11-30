@@ -23,7 +23,13 @@ func CreateUI() (*ebitenui.UI, func(), error) {
 		res: res,
 	}
 
-	rootContainer := widget.NewContainer()
+	rootContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(1),
+			widget.GridLayoutOpts.Stretch([]bool{true}, []bool{true}),
+			widget.GridLayoutOpts.Spacing(0, 20))),
+	//widget.ContainerOpts.BackgroundImage(res.background)
+	)
 
 	toolTips := toolTipContents{
 		tips: map[widget.HasWidget]string{},
@@ -46,10 +52,8 @@ func CreateUI() (*ebitenui.UI, func(), error) {
 	}))
 
 	ui = &ebitenui.UI{
-		Container: rootContainer,
-
-		ToolTip: toolTip,
-
+		Container:   rootContainer,
+		ToolTip:     toolTip,
 		DragAndDrop: dnd,
 	}
 
