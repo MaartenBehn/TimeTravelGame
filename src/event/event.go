@@ -5,6 +5,7 @@ const EventCamUpdate EventId = 2
 
 const EventEditorNewMap EventId = 10
 const EventEditorSaveMap EventId = 11
+const EventEditorLoadMap EventId = 12
 
 const eventMax = 255
 

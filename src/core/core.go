@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	screenWidth  = 1024
-	screenHeight = 840
-	maxTPS       = 30
+	maxTPS = 30
 )
 
 var (
@@ -36,10 +34,10 @@ type Game struct {
 var g *Game
 
 func Init() {
-	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowSize(1024, 840)
 	ebiten.SetWindowTitle("Time Travel Game")
 	ebiten.SetWindowResizable(true)
-	ebiten.SetFPSMode(ebiten.FPSModeVsyncOn)
+	ebiten.SetScreenClearedEveryFrame(true)
 	ebiten.SetMaxTPS(maxTPS)
 
 	bounds := CardPos{500, 500}
@@ -62,7 +60,7 @@ func (g *Game) Update() error {
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		mapPos := CardPos{}
 		mat := *g.cam.matrix
 		mat.Invert()
@@ -70,15 +68,21 @@ func (g *Game) Update() error {
 		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
 
 		tile, _ := g.m.Get(mapPos.ToAxial())
-		tile.vertices[0].ColorA = 1
+		tile.Visable = true
+		g.m.Update()
+	} else if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		mapPos := CardPos{}
+		mat := *g.cam.matrix
+		mat.Invert()
+
+		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
+
+		tile, _ := g.m.Get(mapPos.ToAxial())
+		tile.Visable = false
 		g.m.Update()
 	}
 
 	event.Go(event.EventCamUpdate, nil)
-
-	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
-
-	}
 
 	g.ui.Update()
 
@@ -96,7 +100,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		ebiten.CurrentTPS(), ebiten.CurrentFPS()))
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	return outsideWidth, outsideHeight
 }
 
 func ebitenErrorHandle() {

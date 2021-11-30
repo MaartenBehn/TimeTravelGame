@@ -1,7 +1,7 @@
 package core
 
 import (
-	"TimeTravelGame/src/event"
+	"github.com/Stroby241/TimeTravelGame/src/event"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 )

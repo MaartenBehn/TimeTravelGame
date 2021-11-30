@@ -3,7 +3,6 @@ package core
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -18,7 +17,6 @@ func (m *Map) Save() *bytes.Buffer {
 	if err := e.Encode(*m); err != nil {
 		panic(err)
 	}
-	fmt.Println("Encoded Struct ", b)
 	return &b
 }
 

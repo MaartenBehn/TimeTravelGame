@@ -63,33 +63,10 @@ func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredS
 		widget.ButtonOpts.Text("Load Map", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			event.Go(event.EventEditorSaveMap, "test")
+			event.Go(event.EventEditorLoadMap, "test")
 		}),
 	))
 
-	c1.AddChild(widget.NewTextInput(
-		/*
-			widget.TextInputOpts.WidgetOpts(widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Stretch: true,
-			})),
-		*/
-		widget.TextInputOpts.Image(res.textInput.image),
-		widget.TextInputOpts.Color(res.textInput.color),
-		widget.TextInputOpts.Padding(widget.Insets{
-			Left:   13,
-			Right:  13,
-			Top:    7,
-			Bottom: 7,
-		}),
-		widget.TextInputOpts.Face(res.textInput.face),
-		widget.TextInputOpts.CaretOpts(
-			widget.CaretOpts.Size(res.textInput.face, 2),
-		),
-		widget.TextInputOpts.Placeholder("Enter text here"),
-		widget.TextInputOpts.ChangedHandler(func(args *widget.TextInputChangedEventArgs) {
-			fmt.Println(args)
-		}),
-	))
 	return c
 }
 
@@ -109,12 +86,34 @@ func openNewMapWindow(res *uiResources, ui func() *ebitenui.UI) {
 		widget.TextOpts.Text("Save", res.text.bigTitleFace, res.text.idleColor),
 	))
 
+	c.AddChild(widget.NewTextInput(
+		widget.TextInputOpts.WidgetOpts(widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+			Stretch: true,
+		})),
+		widget.TextInputOpts.Image(res.textInput.image),
+		widget.TextInputOpts.Color(res.textInput.color),
+		widget.TextInputOpts.Padding(widget.Insets{
+			Left:   13,
+			Right:  13,
+			Top:    7,
+			Bottom: 7,
+		}),
+		widget.TextInputOpts.Face(res.textInput.face),
+		widget.TextInputOpts.CaretOpts(
+			widget.CaretOpts.Size(res.textInput.face, 2),
+		),
+		widget.TextInputOpts.Placeholder("Enter text here"),
+		widget.TextInputOpts.ChangedHandler(func(args *widget.TextInputChangedEventArgs) {
+			fmt.Println(args)
+		}),
+	))
+
 	c.AddChild(widget.NewButton(
 		widget.ButtonOpts.Image(res.button.image),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.Text("Save", res.button.face, res.button.text),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			//event.Go(event.EventEditorSaveMap, "test")
+			event.Go(event.EventEditorSaveMap, "test")
 			rw()
 		}),
 	))

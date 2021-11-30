@@ -6,7 +6,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"math"
-	"math/rand"
 )
 
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
@@ -38,7 +37,7 @@ var tileIndecies = []uint16{
 }
 
 type TileSettings struct {
-	IsWalkable bool
+	Visable bool
 }
 
 type Tile struct {
@@ -87,10 +86,10 @@ func (t *Tile) createVertices() {
 		vertex.DstX += float32(t.Pos.X + t.chunk.Pos.X)
 		vertex.DstY += float32(t.Pos.Y + t.chunk.Pos.Y)
 
-		vertex.ColorA = rand.Float32()
+		vertex.ColorA = 1
 		t.vertices[j] = vertex
 	}
-	t.vertices[0].ColorA -= 0.1
+	t.vertices[0].ColorA -= 0.5
 }
 
 // NewChunk is the init function for Chunk
@@ -156,6 +155,9 @@ func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
 
 // DrawTile draws the hexagon for the Tile
 func (t Tile) DrawTile(img *ebiten.Image) {
+	if !t.Visable {
+		return
+	}
 
 	op := &ebiten.DrawTrianglesOptions{}
 	op.Address = ebiten.AddressUnsafe

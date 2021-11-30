@@ -6,19 +6,15 @@ import (
 )
 
 func init() {
-	event.On(event.EventCamUpdate, func(data interface{}) {
-		update()
-	})
 	event.On(event.EventEditorNewMap, func(data interface{}) {
 		newMap(data.(CardPos))
 	})
 	event.On(event.EventEditorSaveMap, func(data interface{}) {
 		saveMap(data.(string))
 	})
-}
-
-func update() {
-
+	event.On(event.EventEditorLoadMap, func(data interface{}) {
+		loadMap(data.(string))
+	})
 }
 
 func newMap(size CardPos) {
@@ -26,5 +22,13 @@ func newMap(size CardPos) {
 }
 
 func saveMap(name string) {
+	if g.m == nil {
+		return
+	}
 	saveMapBufferToFile(name, g.m.Save())
+}
+
+func loadMap(name string) {
+	m := LoadMap(loadMapBufferFromFile(name))
+	g.m = m
 }
