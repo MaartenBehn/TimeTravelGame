@@ -2,7 +2,9 @@ package core
 
 import (
 	"fmt"
-	"github.com/Stroby241/TimeTravelGame/src/math"
+	"github.com/Stroby241/TimeTravelGame/src/event"
+	. "github.com/Stroby241/TimeTravelGame/src/math"
+	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/blizzy78/ebitenui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -12,7 +14,8 @@ import (
 
 const (
 	screenWidth  = 1024
-	screenHeight = 800
+	screenHeight = 840
+	maxTPS       = 30
 )
 
 var (
@@ -30,30 +33,25 @@ type Game struct {
 	ui  *ebitenui.UI
 }
 
-const loadMap = true
+var g *Game
 
 func Init() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Time Travel Game")
+	ebiten.SetWindowResizable(true)
+	ebiten.SetFPSMode(ebiten.FPSModeVsyncOn)
+	ebiten.SetMaxTPS(maxTPS)
 
-	bounds := math.CardPos{500, 500}
+	bounds := CardPos{500, 500}
 
-	var m *Map
-	if loadMap {
-		m = LoadMap(loadMapBufferFromFile("test"))
-	} else {
-		m = NewMap(math.CardPos{500, 500})
-	}
-
-	ui, closeUI, err := CreateUI()
+	ui, closeUI, err := ui.CreateUI()
 	checkErr(err)
 	defer closeUI()
 
-	g := &Game{
-		m:  m,
+	g = &Game{
 		ui: ui,
 
-		cam: NewCamera(math.CardPos{0, 0}, bounds, math.CardPos{1, 1}, math.CardPos{10, 10}),
+		cam: NewCamera(CardPos{0, 0}, bounds, CardPos{1, 1}, CardPos{10, 10}),
 		u:   NewUnitController(4),
 	}
 
@@ -62,10 +60,10 @@ func Init() {
 
 func (g *Game) Update() error {
 	mouseX, mouseY := ebiten.CursorPosition()
-	mouse := math.CardPos{X: float64(mouseX), Y: float64(mouseY)}
+	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		mapPos := math.CardPos{}
+	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		mapPos := CardPos{}
 		mat := *g.cam.matrix
 		mat.Invert()
 
@@ -76,11 +74,10 @@ func (g *Game) Update() error {
 		g.m.Update()
 	}
 
-	g.cam.UpdateInput()
+	event.Go(event.EventCamUpdate, nil)
 
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
-		data := g.m.Save()
-		saveMapBufferToFile("test", data)
+
 	}
 
 	g.ui.Update()
@@ -89,7 +86,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.m.DrawMap(screen, g.cam)
+	if g.m != nil {
+		g.m.DrawMap(screen, g.cam)
+	}
 
 	g.ui.Draw(screen)
 

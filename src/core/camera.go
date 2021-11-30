@@ -1,6 +1,7 @@
 package core
 
 import (
+	"TimeTravelGame/src/event"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -33,6 +34,10 @@ func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPo
 		matrix:   &ebiten.GeoM{},
 	}
 	cam.updateMatrix()
+
+	event.On(event.EventCamUpdate, func(data interface{}) {
+		cam.updateInput()
+	})
 	return cam
 }
 
@@ -72,7 +77,7 @@ func (c *Camera) bounds() {
 }
 
 // Applies user Input to Cam
-func (c *Camera) UpdateInput() {
+func (c *Camera) updateInput() {
 
 	needMatrixUpdate := false
 	if ebiten.IsKeyPressed(ebiten.KeyW) {

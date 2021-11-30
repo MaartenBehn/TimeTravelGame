@@ -1,4 +1,4 @@
-package core
+package ui
 
 import (
 	"fmt"
@@ -40,9 +40,10 @@ func CreateUI() (*ebitenui.UI, func(), error) {
 		widget.DragAndDropOpts.ContentsCreater(drag),
 	)
 
-	rootContainer.AddChild(createMapEditor(res))
-
 	var ui *ebitenui.UI
+	rootContainer.AddChild(createMapEditor(res, func() *ebitenui.UI {
+		return ui
+	}))
 
 	ui = &ebitenui.UI{
 		Container: rootContainer,
@@ -190,4 +191,10 @@ func newSeparator(res *uiResources, ld interface{}) widget.PreferredSizeLocateab
 	))
 
 	return c
+}
+
+func checkErr(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
