@@ -33,16 +33,16 @@ func Init() {
 	ebiten.SetScreenClearedEveryFrame(true)
 	ebiten.SetMaxTPS(maxTPS)
 
-	ui, closeUI, err := ui.CreateUI()
+	uiObj, closeUI, err := ui.CreateUI()
 	checkErr(err)
 	defer closeUI()
 
 	g = &Game{
-		ui: ui,
+		ui: uiObj,
 		u:  NewUnitController(4),
 	}
 
-	event.Go(event.EventEditorLoad, nil)
+	event.Go(event.EventUIShowPanel, ui.PageStart)
 
 	checkErr(ebiten.RunGame(g))
 }

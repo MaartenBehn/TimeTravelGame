@@ -1,11 +1,10 @@
 package ui
 
 import (
-	"github.com/blizzy78/ebitenui"
 	"github.com/blizzy78/ebitenui/widget"
 )
 
-func createGame(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSizeLocateableWidget {
+func createGamePage(res *uiResources) widget.PreferredSizeLocateableWidget {
 	c := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),

@@ -9,8 +9,7 @@ const EventEditorNewMap EventId = 12
 const EventEditorSaveMap EventId = 13
 const EventEditorLoadMap EventId = 14
 
-const EventUIEditorShow EventId = 20
-const EventUIGameShow EventId = 21
+const EventUIShowPanel EventId = 20
 
 const eventMax = 255
 
@@ -32,7 +31,9 @@ func Init() {
 
 func Go(id EventId, data interface{}) {
 	for _, r := range events[id].receiver {
-		r(data)
+		if r != nil {
+			r(data)
+		}
 	}
 }
 
@@ -52,5 +53,5 @@ func UnOn(id EventId, rId ReciverId) {
 	if (ReciverId)(len(events[id].receiver)) <= rId {
 		return
 	}
-	events[id].receiver[id] = nil
+	events[id].receiver[rId] = nil
 }

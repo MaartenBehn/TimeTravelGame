@@ -4,6 +4,7 @@ import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/Stroby241/TimeTravelGame/src/map"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
+	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -49,7 +50,11 @@ func editorLoad(data interface{}) {
 		event.UnOn(event.EventEditorLoadMap, loadMapId)
 
 		event.UnOn(event.EventEditorUnload, unloadId)
+
+		event.Go(event.EventUIShowPanel, ui.PageStart)
 	})
+
+	event.Go(event.EventUIShowPanel, ui.PageMapEditor)
 }
 
 func editorUpdate(m *gameMap.Map, cam *util.Camera) {

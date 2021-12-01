@@ -10,7 +10,7 @@ import (
 	"github.com/blizzy78/ebitenui/widget"
 )
 
-func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSizeLocateableWidget {
+func createMapEditorPage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSizeLocateableWidget {
 
 	c := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
@@ -57,6 +57,15 @@ func createMapEditor(res *uiResources, ui func() *ebitenui.UI) widget.PreferredS
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 			openLoadMapPopUp(res, ui)
+		}),
+	))
+
+	c1.AddChild(widget.NewButton(
+		widget.ButtonOpts.Image(res.button.image),
+		widget.ButtonOpts.Text("Main Menu", res.button.face, res.button.text),
+		widget.ButtonOpts.TextPadding(res.button.padding),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			event.Go(event.EventEditorUnload, nil)
 		}),
 	))
 
