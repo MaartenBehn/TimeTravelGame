@@ -1,16 +1,21 @@
 package event
 
 const EventUpdate EventId = 1
-const EventCamUpdate EventId = 2
+const EventDraw EventId = 2
 
-const EventEditorNewMap EventId = 10
-const EventEditorSaveMap EventId = 11
-const EventEditorLoadMap EventId = 12
+const EventEditorLoad EventId = 10
+const EventEditorUnload EventId = 11
+const EventEditorNewMap EventId = 12
+const EventEditorSaveMap EventId = 13
+const EventEditorLoadMap EventId = 14
+
+const EventUIEditorShow EventId = 20
+const EventUIGameShow EventId = 21
 
 const eventMax = 255
 
 type EventId int
-type reciverId int
+type ReciverId int
 
 type event struct {
 	id       EventId
@@ -19,7 +24,7 @@ type event struct {
 
 var events [eventMax]event
 
-func init() {
+func Init() {
 	for _, e := range events {
 		e.receiver = []func(interface{}){}
 	}
@@ -31,20 +36,20 @@ func Go(id EventId, data interface{}) {
 	}
 }
 
-func On(id EventId, f func(data interface{})) reciverId {
+func On(id EventId, f func(data interface{})) ReciverId {
 	for i, r := range events[id].receiver {
 		if r == nil {
 			events[id].receiver[i] = f
-			return (reciverId)(i)
+			return (ReciverId)(i)
 		}
 	}
 
 	events[id].receiver = append(events[id].receiver, f)
-	return (reciverId)(len(events[id].receiver) - 1)
+	return (ReciverId)(len(events[id].receiver) - 1)
 }
 
-func UnOn(id EventId, rId reciverId) {
-	if (reciverId)(len(events[id].receiver)) <= rId {
+func UnOn(id EventId, rId ReciverId) {
+	if (ReciverId)(len(events[id].receiver)) <= rId {
 		return
 	}
 	events[id].receiver[id] = nil

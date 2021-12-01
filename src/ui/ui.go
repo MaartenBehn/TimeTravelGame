@@ -1,17 +1,11 @@
 package ui
 
 import (
-	"fmt"
+	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/blizzy78/ebitenui"
 	"github.com/blizzy78/ebitenui/image"
 	"github.com/blizzy78/ebitenui/widget"
 )
-
-type pageContainer struct {
-	widget    widget.PreferredSizeLocateableWidget
-	titleText *widget.Text
-	flipBook  *widget.FlipBook
-}
 
 func CreateUI() (*ebitenui.UI, func(), error) {
 	res, err := newUIResources()
@@ -19,17 +13,16 @@ func CreateUI() (*ebitenui.UI, func(), error) {
 		return nil, nil, err
 	}
 
-	drag := &dragContents{
-		res: res,
-	}
-
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewGridLayout(
 			widget.GridLayoutOpts.Columns(1),
-			widget.GridLayoutOpts.Stretch([]bool{true}, []bool{true}),
+			widget.GridLayoutOpts.Stretch([]bool{true}, []bool{true, true}),
 			widget.GridLayoutOpts.Spacing(0, 20))),
-	//widget.ContainerOpts.BackgroundImage(res.background)
 	)
+
+	drag := &dragContents{
+		res: res,
+	}
 
 	toolTips := toolTipContents{
 		tips: map[widget.HasWidget]string{},
@@ -46,59 +39,40 @@ func CreateUI() (*ebitenui.UI, func(), error) {
 		widget.DragAndDropOpts.ContentsCreater(drag),
 	)
 
-	var ui *ebitenui.UI
-	rootContainer.AddChild(createMapEditor(res, func() *ebitenui.UI {
-		return ui
-	}))
-
-	ui = &ebitenui.UI{
+	ui := &ebitenui.UI{
 		Container:   rootContainer,
 		ToolTip:     toolTip,
 		DragAndDrop: dnd,
 	}
 
+	uiFunc := func() *ebitenui.UI {
+		return ui
+	}
+
+	editor := createMapEditor(res, uiFunc)
+	game := createGame(res, uiFunc)
+
+	rootContainer.AddChild(editor)
+	rootContainer.AddChild(game)
+
+	showEditorFunc := func() {
+		editor.GetWidget().Disabled = true
+		game.GetWidget().Disabled = false
+	}
+
+	showGameFunc := func() {
+		editor.GetWidget().Disabled = false
+		game.GetWidget().Disabled = true
+	}
+
+	event.On(event.EventUIEditorShow, func(data interface{}) { showEditorFunc() })
+	event.On(event.EventUIGameShow, func(data interface{}) { showGameFunc() })
+
+	showEditorFunc()
+
 	return ui, func() {
 		res.close()
 	}, nil
-}
-
-func createBaseContainer(res *uiResources) widget.PreferredSizeLocateableWidget {
-	c := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(15))),
-	)
-
-	button := widget.NewButton(
-		widget.ButtonOpts.Image(res.button.image),
-		widget.ButtonOpts.Text("Button", res.button.face, res.button.text),
-		widget.ButtonOpts.TextPadding(res.button.padding),
-	)
-	c.AddChild(button)
-
-	check := newCheckbox("Check", func(args *widget.CheckboxChangedEventArgs) {}, res)
-	c.AddChild(check)
-
-	// Combo Button
-	entries := []interface{}{}
-	for i := 1; i <= 20; i++ {
-		entries = append(entries, i)
-	}
-	cb := newListComboButton(
-		entries,
-		func(e interface{}) string {
-			return fmt.Sprintf("Entry %d", e.(int))
-		},
-		func(e interface{}) string {
-			return fmt.Sprintf("Entry %d", e.(int))
-		},
-		func(args *widget.ListComboButtonEntrySelectedEventArgs) {
-			c.RequestRelayout()
-		},
-		res)
-	c.AddChild(cb)
-
-	return c
 }
 
 func newCheckbox(label string, changedHandler widget.CheckboxChangedHandlerFunc, res *uiResources) *widget.LabeledCheckbox {

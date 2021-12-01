@@ -1,12 +1,18 @@
-package core
+package gameMap
 
 import (
 	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
-	"image"
+	"image/color"
 	"math"
 )
+
+var emptyImage = ebiten.NewImage(3, 3)
+
+func Init() {
+	emptyImage.Fill(color.White)
+}
 
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
 const chunkSizeR = 10 // The ammount of Tiles per Chunk R-axis.
@@ -151,32 +157,6 @@ func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
 	tile := &chunk.Tiles[i]
 
 	return tile, chunk
-}
-
-// DrawTile draws the hexagon for the Tile
-func (t Tile) DrawTile(img *ebiten.Image) {
-	if !t.Visable {
-		return
-	}
-
-	op := &ebiten.DrawTrianglesOptions{}
-	op.Address = ebiten.AddressUnsafe
-
-	img.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
-}
-
-// DrawChunk draws the Chunk
-func (c *Chunk) DrawChunk(img *ebiten.Image) {
-	for _, tile := range c.Tiles {
-		tile.DrawTile(img)
-	}
-}
-
-func (m *Map) DrawMap(img *ebiten.Image, cam *Camera) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM = *cam.matrix
-
-	img.DrawImage(m.mapImage, op)
 }
 
 func (m *Map) Update() {

@@ -1,4 +1,4 @@
-package core
+package gameMap
 
 import (
 	"bytes"
@@ -37,4 +37,10 @@ func LoadMap(b *bytes.Buffer) *Map {
 	m.Update()
 
 	return m
+}
+
+func checkErr(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

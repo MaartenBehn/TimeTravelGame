@@ -1,11 +1,12 @@
 package core
 
 import (
+	"github.com/Stroby241/TimeTravelGame/src/map"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 )
 
 type Unit struct {
-	tile *Tile
+	tile *gameMap.Tile
 	Pos  AxialPos
 }
 

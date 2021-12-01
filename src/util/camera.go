@@ -1,4 +1,4 @@
-package core
+package util
 
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
@@ -35,10 +35,14 @@ func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPo
 	}
 	cam.updateMatrix()
 
-	event.On(event.EventCamUpdate, func(data interface{}) {
+	event.On(event.EventUpdate, func(data interface{}) {
 		cam.updateInput()
 	})
 	return cam
+}
+
+func (c *Camera) GetMatrix() *ebiten.GeoM {
+	return c.matrix
 }
 
 // Updates Cam.matrix

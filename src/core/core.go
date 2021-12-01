@@ -2,45 +2,36 @@ package core
 
 import (
 	"fmt"
+	"github.com/Stroby241/TimeTravelGame/src/editor"
 	"github.com/Stroby241/TimeTravelGame/src/event"
-	. "github.com/Stroby241/TimeTravelGame/src/math"
+	gameMap "github.com/Stroby241/TimeTravelGame/src/map"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/blizzy78/ebitenui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"image/color"
-	"runtime/debug"
 )
 
 const (
 	maxTPS = 30
 )
 
-var (
-	emptyImage = ebiten.NewImage(3, 3)
-)
-
-func init() {
-	emptyImage.Fill(color.White)
-}
-
 type Game struct {
-	m   *Map
-	cam *Camera
-	u   *UnitController
-	ui  *ebitenui.UI
+	u  *UnitController
+	ui *ebitenui.UI
 }
 
 var g *Game
 
 func Init() {
+	event.Init()
+	gameMap.Init()
+	editor.Init()
+
 	ebiten.SetWindowSize(1024, 840)
 	ebiten.SetWindowTitle("Time Travel Game")
 	ebiten.SetWindowResizable(true)
 	ebiten.SetScreenClearedEveryFrame(true)
 	ebiten.SetMaxTPS(maxTPS)
-
-	bounds := CardPos{500, 500}
 
 	ui, closeUI, err := ui.CreateUI()
 	checkErr(err)
@@ -48,51 +39,24 @@ func Init() {
 
 	g = &Game{
 		ui: ui,
-
-		cam: NewCamera(CardPos{0, 0}, bounds, CardPos{1, 1}, CardPos{10, 10}),
-		u:   NewUnitController(4),
+		u:  NewUnitController(4),
 	}
+
+	event.Go(event.EventEditorLoad, nil)
 
 	checkErr(ebiten.RunGame(g))
 }
 
 func (g *Game) Update() error {
-	mouseX, mouseY := ebiten.CursorPosition()
-	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
-
-	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		mapPos := CardPos{}
-		mat := *g.cam.matrix
-		mat.Invert()
-
-		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
-
-		tile, _ := g.m.Get(mapPos.ToAxial())
-		tile.Visable = true
-		g.m.Update()
-	} else if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		mapPos := CardPos{}
-		mat := *g.cam.matrix
-		mat.Invert()
-
-		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
-
-		tile, _ := g.m.Get(mapPos.ToAxial())
-		tile.Visable = false
-		g.m.Update()
-	}
-
-	event.Go(event.EventCamUpdate, nil)
-
 	g.ui.Update()
+
+	event.Go(event.EventUpdate, nil)
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	if g.m != nil {
-		g.m.DrawMap(screen, g.cam)
-	}
+	event.Go(event.EventDraw, screen)
 
 	g.ui.Draw(screen)
 
@@ -101,13 +65,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return outsideWidth, outsideHeight
-}
-
-func ebitenErrorHandle() {
-	if err := recover(); err != nil {
-		fmt.Println(err)
-		debug.PrintStack()
-	}
 }
 
 func checkErr(e error) {
