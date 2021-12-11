@@ -22,6 +22,7 @@ func createStartPage(res *uiResources) widget.PreferredSizeLocateableWidget {
 		widget.ButtonOpts.Text("Start Game", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			event.Go(event.EventGameLoad, nil)
 		}),
 	))
 

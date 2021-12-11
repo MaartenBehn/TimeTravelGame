@@ -4,56 +4,11 @@ import (
 	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
-	"image/color"
 	"math"
 )
 
-var emptyImage = ebiten.NewImage(3, 3)
-
-func Init() {
-	emptyImage.Fill(color.White)
-}
-
 const chunkSizeQ = 10 // The ammount of Tiles per Chunk Q-axis.
 const chunkSizeR = 10 // The ammount of Tiles per Chunk R-axis.
-
-var tileSize = 10.0                    // Scaling factor for Tile Size.
-var tileHeigth = 2 * tileSize          // From Tutorial not uesd at the moment
-var tileWith = math.Sqrt(3) * tileSize // From Tutorial not uesd at the moment
-
-// The local Vertex coodrs for a Tile
-var tileVertices = [7]ebiten.Vertex{
-	{DstX: 0, DstY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-	{DstX: float32(-0.5 * tileSize), DstY: float32(tileSize), ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-	{DstX: float32(0.5 * tileSize), DstY: float32(tileSize), ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-	{DstX: float32(tileSize), DstY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-	{DstX: float32(0.5 * tileSize), DstY: float32(-tileSize), ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-	{DstX: float32(-0.5 * tileSize), DstY: float32(-tileSize), ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-	{DstX: float32(-tileSize), DstY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
-}
-
-// The corresponding indices
-var tileIndecies = []uint16{
-	0, 1, 2,
-	0, 2, 3,
-	0, 3, 4,
-	0, 4, 5,
-	0, 5, 6,
-	0, 6, 1,
-}
-
-type TileSettings struct {
-	Visable bool
-}
-
-type Tile struct {
-	TileSettings
-	Pos      CardPos
-	ChunkPos AxialPos
-
-	chunk    *Chunk
-	vertices []ebiten.Vertex
-}
 
 type Chunk struct {
 	Pos      CardPos
@@ -65,37 +20,21 @@ type Map struct {
 	Size   CardPos
 	Chunks map[AxialPos]*Chunk
 
+	UnitController *UnitController
+
+	ArrowPos CardPos
+
 	mapImage *ebiten.Image
 }
 
-// Converts a 2D tile index to 1D a index.
+// Converts a 2D Tile index to 1D a index.
 func index(q int, r int) int {
 	return q + r*chunkSizeQ
 }
 
-// Converts a 1D tile index to a 2D index.
+// Converts a 1D Tile index to a 2D index.
 func reverseIndex(i int) (q int, r int) {
 	return i % chunkSizeQ, i / chunkSizeQ
-}
-
-func NewTile(q int, r int, chunk *Chunk) (tile Tile) {
-	tile.Pos = AxialPos{Q: float64(q), R: float64(r)}.MulFloat(tileSize * 2).ToCard()
-	tile.ChunkPos = chunk.AxialPos
-	tile.chunk = chunk
-	tile.createVertices()
-	return tile
-}
-
-func (t *Tile) createVertices() {
-	t.vertices = make([]ebiten.Vertex, len(tileVertices))
-	for j, vertex := range tileVertices {
-		vertex.DstX += float32(t.Pos.X + t.chunk.Pos.X)
-		vertex.DstY += float32(t.Pos.Y + t.chunk.Pos.Y)
-
-		vertex.ColorA = 1
-		t.vertices[j] = vertex
-	}
-	t.vertices[0].ColorA -= 0.5
 }
 
 // NewChunk is the init function for Chunk
@@ -117,8 +56,10 @@ func NewChunk(pos AxialPos) *Chunk {
 // NewMap is the init func for a new Map
 func NewMap(size CardPos) *Map {
 	return &Map{
-		Size:     size,
-		Chunks:   map[AxialPos]*Chunk{},
+		Size:           size,
+		Chunks:         map[AxialPos]*Chunk{},
+		UnitController: NewUnitController(),
+
 		mapImage: ebiten.NewImage(int(size.X), int(size.Y)),
 	}
 }
@@ -134,8 +75,8 @@ func (m *Map) GetChunk(pos AxialPos) *Chunk {
 	return chunk
 }
 
-func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
-	roundPos := pos.DivFloat(tileSize * 2).Round()
+func (m *Map) GetAxial(pos AxialPos) (*Tile, *Chunk) {
+	roundPos := pos.Round()
 	chunkPos := roundPos.Div(AxialPos{chunkSizeQ, chunkSizeR}).Trunc()
 
 	if roundPos.Q < 0 && math.Mod(roundPos.Q, 10) != 0 {
@@ -159,10 +100,17 @@ func (m *Map) Get(pos AxialPos) (*Tile, *Chunk) {
 	return tile, chunk
 }
 
+func (m *Map) GetCard(pos CardPos) (*Tile, *Chunk) {
+	t, c := m.GetAxial(pos.ToAxial().DivFloat(tileSize * 2))
+	return t, c
+}
+
 func (m *Map) Update() {
 	m.mapImage.Clear()
 
 	for _, chunk := range m.Chunks {
-		chunk.DrawChunk(m.mapImage)
+		chunk.draw(m.mapImage)
 	}
+
+	m.UnitController.draw(m.mapImage, m)
 }

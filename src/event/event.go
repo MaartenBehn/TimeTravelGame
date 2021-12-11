@@ -1,17 +1,25 @@
 package event
 
-const EventUpdate EventId = 1
-const EventDraw EventId = 2
+const (
+	EventUpdate EventId = 1
+	EventDraw   EventId = 2
 
-const EventEditorLoad EventId = 10
-const EventEditorUnload EventId = 11
-const EventEditorNewMap EventId = 12
-const EventEditorSaveMap EventId = 13
-const EventEditorLoadMap EventId = 14
+	EventUIShowPanel EventId = 5
 
-const EventUIShowPanel EventId = 20
+	EventEditorLoad    EventId = 10
+	EventEditorUnload  EventId = 11
+	EventEditorNewMap  EventId = 12
+	EventEditorSaveMap EventId = 13
+	EventEditorLoadMap EventId = 14
+	EventEditorSetMode EventId = 15
 
-const eventMax = 255
+	EventGameLoad        EventId = 20
+	EventGameUnload      EventId = 21
+	EventGameLoadMap     EventId = 22
+	EventGameSubmitRound EventId = 23
+
+	eventMax = 255
+)
 
 type EventId int
 type ReciverId int

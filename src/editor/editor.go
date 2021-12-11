@@ -10,35 +10,39 @@ import (
 )
 
 func Init() {
-	event.On(event.EventEditorLoad, editorLoad)
+	event.On(event.EventEditorLoad, load)
 }
 
 type editor struct {
-	m   *gameMap.Map
-	cam *util.Camera
+	m    *gameMap.Map
+	cam  *util.Camera
+	mode int
 }
 
-func editorLoad(data interface{}) {
+func load(data interface{}) {
 	e := &editor{
-		m:   nil,
-		cam: util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
+		m:    nil,
+		cam:  util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
+		mode: 0,
 	}
 
 	updateId := event.On(event.EventUpdate, func(data interface{}) {
-		editorUpdate(e.m, e.cam)
+		update(e)
 	})
 	drawId := event.On(event.EventDraw, func(data interface{}) {
-		editorDraw(data.(*ebiten.Image), e.m, e.cam)
+		draw(data.(*ebiten.Image), e)
 	})
-
 	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
-		e.m = editorNewMap(data.(CardPos))
+		e.m = newMap(data.(CardPos))
 	})
 	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
-		editorSaveMap(data.(string), e.m)
+		saveMap(data.(string), e)
 	})
 	loadMapId := event.On(event.EventEditorLoadMap, func(data interface{}) {
-		e.m = editorLoadMap(data.(string))
+		e.m = loadMap(data.(string))
+	})
+	modeId := event.On(event.EventEditorSetMode, func(data interface{}) {
+		e.mode = data.(int)
 	})
 
 	var unloadId event.ReciverId
@@ -48,6 +52,7 @@ func editorLoad(data interface{}) {
 		event.UnOn(event.EventEditorNewMap, newMapId)
 		event.UnOn(event.EventEditorSaveMap, saveMapId)
 		event.UnOn(event.EventEditorLoadMap, loadMapId)
+		event.UnOn(event.EventEditorSetMode, modeId)
 
 		event.UnOn(event.EventEditorUnload, unloadId)
 
@@ -57,56 +62,80 @@ func editorLoad(data interface{}) {
 	event.Go(event.EventUIShowPanel, ui.PageMapEditor)
 }
 
-func editorUpdate(m *gameMap.Map, cam *util.Camera) {
+func update(e *editor) {
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	if m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		mapPos := CardPos{}
-		mat := *cam.GetMatrix()
+	getTile := func() *gameMap.Tile {
+		mat := *e.cam.GetMatrix()
 		mat.Invert()
 
-		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
+		clickPos := CardPos{}
+		clickPos.X, clickPos.Y = mat.Apply(mouse.X, mouse.Y)
 
-		tile, _ := m.Get(mapPos.ToAxial())
-		tile.Visable = true
-		m.Update()
-	} else if m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		mapPos := CardPos{}
-		mat := *cam.GetMatrix()
-		mat.Invert()
+		tile, _ := e.m.GetCard(clickPos)
+		return tile
+	}
 
-		mapPos.X, mapPos.Y = mat.Apply(mouse.X, mouse.Y)
+	if e.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		tile := getTile()
 
-		tile, _ := m.Get(mapPos.ToAxial())
-		tile.Visable = false
-		m.Update()
+		if e.mode == 0 {
+			tile.Visable = true
+		} else if e.mode == 1 {
+			e.m.UnitController.AddUnitAtTile(tile, &gameMap.FractionBlue)
+		} else if e.mode == 2 {
+			e.m.UnitController.AddUnitAtTile(tile, &gameMap.FractionRed)
+		} else if e.mode == 3 {
+			_, _, unit := e.m.UnitController.GetUnitAtPos(tile.AxialPos)
+			if unit != nil {
+				e.m.UnitController.SetSelector(unit.Pos)
+			}
+		}
+
+		e.m.Update()
+	} else if e.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		tile := getTile()
+
+		if e.mode == 0 {
+			tile.Visable = false
+		} else if e.mode == 1 || e.mode == 2 {
+			e.m.UnitController.RemoveUnitAtTile(tile)
+		} else if e.mode == 3 {
+			_, _, unit := e.m.UnitController.GetUnitAtPos(e.m.UnitController.SelectedUnit)
+
+			if unit != nil && tile.Visable {
+				unit.TargetPos = tile.AxialPos
+			}
+		}
+
+		e.m.Update()
 	}
 }
 
-func editorDraw(screen *ebiten.Image, m *gameMap.Map, cam *util.Camera) {
-	if m != nil {
-		m.DrawMap(screen, cam)
+func draw(screen *ebiten.Image, e *editor) {
+	if e.m != nil {
+		e.m.Draw(screen, e.cam)
 	}
 }
 
-func editorNewMap(size CardPos) *gameMap.Map {
+func newMap(size CardPos) *gameMap.Map {
 	m := gameMap.NewMap(size)
 	return m
 }
 
-func editorSaveMap(name string, m *gameMap.Map) {
-	if m == nil {
+func saveMap(name string, e *editor) {
+	if e.m == nil {
 		return
 	}
-	util.SaveMapBufferToFile(name, m.Save())
+	util.SaveMapBufferToFile(name, e.m.Save())
 }
 
-func editorLoadMap(name string) *gameMap.Map {
+func loadMap(name string) *gameMap.Map {
 	buffer := util.LoadMapBufferFromFile(name)
 	if buffer == nil {
 		return nil
 	}
-	m := gameMap.LoadMap(buffer)
+	m := gameMap.Load(buffer)
 	return m
 }

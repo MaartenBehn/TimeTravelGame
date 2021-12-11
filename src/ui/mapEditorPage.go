@@ -69,6 +69,31 @@ func createMapEditorPage(res *uiResources, ui func() *ebitenui.UI) widget.Prefer
 		}),
 	))
 
+	entries := []interface{}{
+		"Ground",
+		"Unit Blue",
+		"Unit Red",
+		"Arrow",
+	}
+
+	c1.AddChild(newListComboButton(
+		entries,
+		func(e interface{}) string {
+			return e.(string)
+		},
+		func(e interface{}) string {
+			return e.(string)
+		},
+		func(args *widget.ListComboButtonEntrySelectedEventArgs) {
+			for i, entry := range entries {
+				if entry.(string) == args.Entry.(string) {
+					event.Go(event.EventEditorSetMode, i)
+				}
+			}
+			c.RequestRelayout()
+		},
+		res))
+
 	return c
 }
 

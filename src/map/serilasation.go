@@ -20,7 +20,7 @@ func (m *Map) Save() *bytes.Buffer {
 	return &b
 }
 
-func LoadMap(b *bytes.Buffer) *Map {
+func Load(b *bytes.Buffer) *Map {
 
 	m := &Map{}
 	d := gob.NewDecoder(b)
@@ -30,10 +30,12 @@ func LoadMap(b *bytes.Buffer) *Map {
 	for _, chunk := range m.Chunks {
 		for i, tile := range chunk.Tiles {
 			tile.chunk = chunk
-			tile.createVertices()
+			tile.makeReady()
 			chunk.Tiles[i] = tile
 		}
 	}
+	m.UnitController.makeReady()
+
 	m.Update()
 
 	return m

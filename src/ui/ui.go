@@ -80,7 +80,7 @@ func createPages(res *uiResources, ui *ebitenui.UI) {
 
 	pages[PageStart] = createStartPage(res)
 	pages[PageMapEditor] = createMapEditorPage(res, uiFunc)
-	pages[PageGame] = createGamePage(res)
+	pages[PageGame] = createGamePage(res, uiFunc)
 }
 
 func setPage(pageId int, flipBook *widget.FlipBook) {
