@@ -20,7 +20,7 @@ type Map struct {
 	Size   CardPos
 	Chunks map[AxialPos]*Chunk
 
-	UnitController *UnitController
+	U *UnitController
 
 	ArrowPos CardPos
 
@@ -56,9 +56,9 @@ func NewChunk(pos AxialPos) *Chunk {
 // NewMap is the init func for a new Map
 func NewMap(size CardPos) *Map {
 	return &Map{
-		Size:           size,
-		Chunks:         map[AxialPos]*Chunk{},
-		UnitController: NewUnitController(),
+		Size:   size,
+		Chunks: map[AxialPos]*Chunk{},
+		U:      NewUnitController(),
 
 		mapImage: ebiten.NewImage(int(size.X), int(size.Y)),
 	}
@@ -112,5 +112,5 @@ func (m *Map) Update() {
 		chunk.draw(m.mapImage)
 	}
 
-	m.UnitController.draw(m.mapImage, m)
+	m.U.draw(m.mapImage, m)
 }

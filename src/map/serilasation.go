@@ -34,7 +34,7 @@ func Load(b *bytes.Buffer) *Map {
 			chunk.Tiles[i] = tile
 		}
 	}
-	m.UnitController.makeReady()
+	m.U.makeReady()
 
 	m.Update()
 

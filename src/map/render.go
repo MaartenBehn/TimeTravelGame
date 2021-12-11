@@ -80,9 +80,11 @@ func (u *UnitController) draw(img *ebiten.Image, m *Map) {
 
 	for _, units := range u.Units {
 		for _, unit := range units {
-			tile, _ := m.GetAxial(unit.Pos)
-			totile, _ := m.GetAxial(unit.TargetPos)
-			drawArrow(tile.Pos, totile.Pos, img)
+			if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
+				tile, _ := m.GetAxial(unit.Pos)
+				totile, _ := m.GetAxial(*unit.Action.ToPos)
+				drawArrow(tile.Pos, totile.Pos, img)
+			}
 		}
 	}
 }
@@ -123,7 +125,7 @@ func (m *Map) drawSelector(img *ebiten.Image, cam *util.Camera) {
 
 	if selectorVisable {
 		op := &ebiten.DrawImageOptions{}
-		tile, _ := m.GetAxial(m.UnitController.SelectedUnit)
+		tile, _ := m.GetAxial(m.U.SelectedUnit)
 
 		size := selectorImgMask.Bounds().Size()
 

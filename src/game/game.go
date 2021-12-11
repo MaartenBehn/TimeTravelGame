@@ -37,7 +37,8 @@ func load(data interface{}) {
 	})
 
 	submitRoundId := event.On(event.EventGameSubmitRound, func(data interface{}) {
-		submitRound(g)
+		g.m.U.SubmitRound()
+		g.m.Update()
 	})
 
 	var unloadId event.ReciverId
@@ -73,19 +74,19 @@ func update(g *game) {
 	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		tile := getTile()
 
-		_, _, unit := g.m.UnitController.GetUnitAtPos(tile.AxialPos)
+		_, _, unit := g.m.U.GetUnitAtPos(tile.AxialPos)
 		if unit != nil {
-			g.m.UnitController.SetSelector(unit.Pos)
+			g.m.U.SetSelector(unit.Pos)
 		}
 
 		g.m.Update()
 	} else if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		tile := getTile()
 
-		_, _, unit := g.m.UnitController.GetUnitAtPos(g.m.UnitController.SelectedUnit)
+		_, _, unit := g.m.U.GetUnitAtPos(g.m.U.SelectedUnit)
 
 		if unit != nil && tile.Visable {
-			unit.TargetPos = tile.AxialPos
+			g.m.U.SetAction(unit, tile.AxialPos)
 		}
 
 		g.m.Update()
@@ -105,79 +106,4 @@ func loadMap(name string) *gameMap.Map {
 	}
 	m := gameMap.Load(buffer)
 	return m
-}
-
-func submitRound(g *game) {
-	for _, chunk := range g.m.Chunks {
-		for _, tile := range chunk.Tiles {
-			tile.TargetOf = []*gameMap.Unit{}
-		}
-	}
-
-	targetTiles := make([]*gameMap.Tile, 0)
-	for _, units := range g.m.UnitController.Units {
-		for _, unit := range units {
-			tile, _ := g.m.GetAxial(unit.TargetPos)
-			tile.TargetOf = append(tile.TargetOf, unit)
-
-			isContained := false
-			for _, targetTile := range targetTiles {
-				if targetTile == tile {
-					isContained = true
-					break
-				}
-			}
-			if !isContained {
-				targetTiles = append(targetTiles, tile)
-			}
-		}
-	}
-
-	for _, tile := range targetTiles {
-		if len(tile.TargetOf) == 1 {
-
-			tile.TargetOf[0].Pos = tile.AxialPos
-
-		} else if len(tile.TargetOf) > 1 {
-
-			factions := make([]int, len(g.m.UnitController.Units))
-			for _, u := range tile.TargetOf {
-				factions[u.FactionId] += 1
-			}
-
-			winningFaction := -1
-			winningFactionAmmount := 0
-			for i, faction := range factions {
-				if winningFactionAmmount < faction {
-					winningFactionAmmount = faction
-					winningFaction = i
-				} else if winningFactionAmmount == faction {
-					winningFaction = -1
-				}
-			}
-
-			if winningFaction != -1 {
-				for _, u := range tile.TargetOf {
-					if u.FactionId == winningFaction {
-						_, _, presentUnit := g.m.UnitController.GetUnitAtPos(tile.AxialPos)
-
-						if presentUnit != nil && presentUnit != u {
-							g.m.UnitController.RemoveUnitAtTile(tile)
-						}
-
-						u.Pos = tile.AxialPos
-						break
-					}
-				}
-			}
-		}
-	}
-
-	for _, units := range g.m.UnitController.Units {
-		for _, unit := range units {
-			unit.TargetPos = unit.Pos
-		}
-	}
-
-	g.m.Update()
 }

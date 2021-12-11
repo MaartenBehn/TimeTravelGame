@@ -27,6 +27,8 @@ type UnitController struct {
 	Units     map[int][]*Unit
 
 	SelectedUnit AxialPos
+	moveUnits    []*Unit
+	supportUnits []*Unit
 }
 
 func NewUnitController() *UnitController {
@@ -38,6 +40,30 @@ func NewUnitController() *UnitController {
 }
 func (u *UnitController) makeReady() {
 	u.fractions = []*Fraction{&FractionRed, &FractionBlue}
+
+	for _, units := range u.Units {
+		for _, unit := range units {
+			if unit.Action.Kind == actionMove {
+
+				u.moveUnits = append(u.moveUnits, unit)
+
+			} else if unit.Action.Kind == actionSupport {
+
+				u.supportUnits = append(u.supportUnits, unit)
+
+				if _, _, actionUnit := u.GetUnitAtPos(*unit.Action.ToPos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
+					actionUnit.supportUnits++
+				}
+
+				for _, actionUnit := range u.moveUnits {
+					if *actionUnit.Action.ToPos == *unit.Action.ToPos && actionUnit.FactionId == unit.FactionId {
+						actionUnit.Action.supportUnits++
+						break
+					}
+				}
+			}
+		}
+	}
 }
 
 func (u *UnitController) getFractionIndex(f *Fraction) int {
@@ -79,18 +105,14 @@ func (u *UnitController) AddUnitAtPos(pos AxialPos, fraction *Fraction, m *Map) 
 }
 
 func (u *UnitController) RemoveUnitAtTile(tile *Tile) {
-	f, i, unit := u.GetUnitAtPos(tile.AxialPos)
+	u.RemoveUnitAtPos(tile.AxialPos)
+}
+func (u *UnitController) RemoveUnitAtPos(pos AxialPos) {
+	f, i, unit := u.GetUnitAtPos(pos)
 	if unit != nil {
 		j := u.getFractionIndex(f)
 		u.Units[j] = append(u.Units[j][:i], u.Units[j][i+1:]...)
 	}
-}
-func (u *UnitController) RemoveUnitAtPos(pos AxialPos, m *Map) {
-	tile, _ := m.GetAxial(pos)
-	if tile == nil {
-		return
-	}
-	u.RemoveUnitAtTile(tile)
 }
 
 func (u *UnitController) SetSelector(pos AxialPos) {
@@ -101,15 +123,16 @@ func (u *UnitController) SetSelector(pos AxialPos) {
 }
 
 type Unit struct {
-	FactionId int
-	Pos       AxialPos
-	TargetPos AxialPos
+	FactionId    int
+	Pos          AxialPos
+	Action       *Action
+	supportUnits int
 }
 
 func NewUnit(pos AxialPos, factionId int) *Unit {
 	return &Unit{
 		FactionId: factionId,
 		Pos:       pos,
-		TargetPos: pos,
+		Action:    NewAction(),
 	}
 }

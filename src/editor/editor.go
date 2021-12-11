@@ -82,14 +82,14 @@ func update(e *editor) {
 
 		if e.mode == 0 {
 			tile.Visable = true
-		} else if e.mode == 1 {
-			e.m.UnitController.AddUnitAtTile(tile, &gameMap.FractionBlue)
+		} else if e.mode == 1 && tile.Visable {
+			e.m.U.AddUnitAtTile(tile, &gameMap.FractionBlue)
 		} else if e.mode == 2 {
-			e.m.UnitController.AddUnitAtTile(tile, &gameMap.FractionRed)
-		} else if e.mode == 3 {
-			_, _, unit := e.m.UnitController.GetUnitAtPos(tile.AxialPos)
+			e.m.U.AddUnitAtTile(tile, &gameMap.FractionRed)
+		} else if e.mode == 3 && tile.Visable {
+			_, _, unit := e.m.U.GetUnitAtPos(tile.AxialPos)
 			if unit != nil {
-				e.m.UnitController.SetSelector(unit.Pos)
+				e.m.U.SetSelector(unit.Pos)
 			}
 		}
 
@@ -99,13 +99,15 @@ func update(e *editor) {
 
 		if e.mode == 0 {
 			tile.Visable = false
-		} else if e.mode == 1 || e.mode == 2 {
-			e.m.UnitController.RemoveUnitAtTile(tile)
-		} else if e.mode == 3 {
-			_, _, unit := e.m.UnitController.GetUnitAtPos(e.m.UnitController.SelectedUnit)
+			e.m.U.RemoveUnitAtTile(tile)
+
+		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
+			e.m.U.RemoveUnitAtTile(tile)
+		} else if e.mode == 3 && tile.Visable {
+			_, _, unit := e.m.U.GetUnitAtPos(e.m.U.SelectedUnit)
 
 			if unit != nil && tile.Visable {
-				unit.TargetPos = tile.AxialPos
+				e.m.U.SetAction(unit, tile.AxialPos)
 			}
 		}
 
