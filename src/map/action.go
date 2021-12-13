@@ -12,9 +12,9 @@ const (
 )
 
 type Action struct {
-	Kind         int
-	ToPos        *AxialPos
-	supportUnits int // For Move Action
+	Kind    int
+	ToPos   *AxialPos
+	Support int // For Move Action
 }
 
 func NewAction() *Action {
@@ -34,12 +34,12 @@ func (u *UnitController) SetAction(unit *Unit, pos AxialPos) {
 	} else if unit.Action.Kind == actionSupport {
 
 		if _, _, actionUnit := u.GetUnitAtPos(*unit.Action.ToPos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
-			actionUnit.supportUnits--
+			actionUnit.Support--
 		}
 
 		for _, actionUnit := range u.moveUnits {
 			if *actionUnit.Action.ToPos == *unit.Action.ToPos && actionUnit.FactionId == unit.FactionId {
-				actionUnit.Action.supportUnits--
+				actionUnit.Action.Support--
 			}
 		}
 
@@ -61,9 +61,9 @@ func (u *UnitController) SetAction(unit *Unit, pos AxialPos) {
 	if _, _, actionUnit := u.GetUnitAtPos(pos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
 		unit.Action.Kind = actionSupport
 		unit.Action.ToPos = &pos
-		unit.Action.supportUnits = 0
+		unit.Action.Support = 0
 
-		actionUnit.supportUnits++
+		actionUnit.Support++
 		u.supportUnits = append(u.supportUnits, unit)
 		return
 	}
@@ -73,9 +73,9 @@ func (u *UnitController) SetAction(unit *Unit, pos AxialPos) {
 		if *actionUnit.Action.ToPos == pos && actionUnit.FactionId == unit.FactionId {
 			unit.Action.Kind = actionSupport
 			unit.Action.ToPos = &pos
-			unit.Action.supportUnits = 0
+			unit.Action.Support = 0
 
-			actionUnit.Action.supportUnits++
+			actionUnit.Action.Support++
 			u.supportUnits = append(u.supportUnits, unit)
 			return
 		}
@@ -120,10 +120,13 @@ func (u *UnitController) SubmitRound() {
 		for j := len(u.supportUnits) - 1; j >= 0; j-- {
 			if *u.supportUnits[j].Action.ToPos == unit.Pos {
 				u.SetAction(u.supportUnits[j], u.supportUnits[j].Pos)
+			} else if *u.supportUnits[j].Action.ToPos == *unit.Action.ToPos {
+				u.SetAction(u.supportUnits[j], u.supportUnits[j].Pos)
 			}
 		}
 
 		unit.Pos = pos
+
 		u.SetAction(unit, unit.Pos)
 	}
 
@@ -142,23 +145,23 @@ func (u *UnitController) SubmitRound() {
 
 			_, _, presentUnit := u.GetUnitAtPos(positon.pos)
 			if presentUnit != nil {
-				winningSupport = presentUnit.supportUnits + 1
-				loopWinningSupport = presentUnit.supportUnits
+				winningSupport = presentUnit.Support + 1
+				loopWinningSupport = presentUnit.Support
 			}
 
 			for _, unit := range positon.moveUnits {
 
-				if (unit.Action.supportUnits + 1) > winningSupport {
+				if (unit.Action.Support + 1) > winningSupport {
 					winningUnit = unit
-					winningSupport = unit.Action.supportUnits + 1
-				} else if (unit.Action.supportUnits + 1) == winningSupport {
+					winningSupport = unit.Action.Support + 1
+				} else if (unit.Action.Support + 1) == winningSupport {
 					winningUnit = nil
 				}
 
-				if (unit.Action.supportUnits + 1) > loopWinningSupport {
+				if (unit.Action.Support + 1) > loopWinningSupport {
 					loopWinningUnit = unit
-					loopWinningSupport = unit.Action.supportUnits + 1
-				} else if (unit.Action.supportUnits + 1) == loopWinningSupport {
+					loopWinningSupport = unit.Action.Support + 1
+				} else if (unit.Action.Support + 1) == loopWinningSupport {
 					loopWinningUnit = nil
 				}
 			}

@@ -2,45 +2,55 @@ package gameMap
 
 import (
 	. "github.com/Stroby241/TimeTravelGame/src/math"
+	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/colornames"
 	"image/color"
 )
 
 type Fraction struct {
-	name  string
-	color color.Color
+	name       string
+	color      color.Color
+	colorLigth color.Color
+
+	images map[string]*ebiten.Image
 }
 
-var (
-	FractionRed = Fraction{
+var Fractions = []Fraction{
+	{
 		name:  "red",
 		color: colornames.Red,
-	}
-	FractionBlue = Fraction{
+	},
+	{
 		name:  "blue",
 		color: colornames.Blue,
+	},
+}
+
+func getFractionIndex(f *Fraction) int {
+	for i, fraction := range Fractions {
+		if fraction.name == f.name {
+			return i
+		}
 	}
-)
+	return -1
+}
 
 type UnitController struct {
-	fractions []*Fraction
-	Units     map[int][]*Unit
-
+	Units        [][]*Unit
 	SelectedUnit AxialPos
+
 	moveUnits    []*Unit
 	supportUnits []*Unit
 }
 
 func NewUnitController() *UnitController {
 	u := &UnitController{
-		Units: map[int][]*Unit{},
+		Units: make([][]*Unit, len(Fractions)),
 	}
 	u.makeReady()
 	return u
 }
 func (u *UnitController) makeReady() {
-	u.fractions = []*Fraction{&FractionRed, &FractionBlue}
-
 	for _, units := range u.Units {
 		for _, unit := range units {
 			if unit.Action.Kind == actionMove {
@@ -50,36 +60,16 @@ func (u *UnitController) makeReady() {
 			} else if unit.Action.Kind == actionSupport {
 
 				u.supportUnits = append(u.supportUnits, unit)
-
-				if _, _, actionUnit := u.GetUnitAtPos(*unit.Action.ToPos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
-					actionUnit.supportUnits++
-				}
-
-				for _, actionUnit := range u.moveUnits {
-					if *actionUnit.Action.ToPos == *unit.Action.ToPos && actionUnit.FactionId == unit.FactionId {
-						actionUnit.Action.supportUnits++
-						break
-					}
-				}
 			}
 		}
 	}
-}
-
-func (u *UnitController) getFractionIndex(f *Fraction) int {
-	for i, fraction := range u.fractions {
-		if fraction == f {
-			return i
-		}
-	}
-	return -1
 }
 
 func (u *UnitController) GetUnitAtPos(pos AxialPos) (*Fraction, int, *Unit) {
 	for f, units := range u.Units {
 		for i, unit := range units {
 			if unit.Pos == pos {
-				return u.fractions[f], i, unit
+				return &Fractions[f], i, unit
 			}
 		}
 	}
@@ -89,7 +79,7 @@ func (u *UnitController) GetUnitAtPos(pos AxialPos) (*Fraction, int, *Unit) {
 func (u *UnitController) AddUnitAtTile(tile *Tile, fraction *Fraction) *Unit {
 	_, _, unit := u.GetUnitAtPos(tile.AxialPos)
 	if unit == nil && tile.Visable {
-		id := u.getFractionIndex(fraction)
+		id := getFractionIndex(fraction)
 
 		unit = NewUnit(tile.AxialPos, id)
 		u.Units[id] = append(u.Units[id], unit)
@@ -110,23 +100,34 @@ func (u *UnitController) RemoveUnitAtTile(tile *Tile) {
 func (u *UnitController) RemoveUnitAtPos(pos AxialPos) {
 	f, i, unit := u.GetUnitAtPos(pos)
 	if unit != nil {
-		j := u.getFractionIndex(f)
+		j := getFractionIndex(f)
 		u.Units[j] = append(u.Units[j][:i], u.Units[j][i+1:]...)
 	}
 }
 
-func (u *UnitController) SetSelector(pos AxialPos) {
-	_, _, unit := u.GetUnitAtPos(pos)
-	if unit != nil {
-		u.SelectedUnit = unit.Pos
+func (u *UnitController) draw(img *ebiten.Image, m *Map) {
+	for f, units := range u.Units {
+		for _, unit := range units {
+			unit.draw(img, &Fractions[f], m)
+		}
+	}
+
+	for _, units := range u.Units {
+		for _, unit := range units {
+			if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
+				tile, _ := m.GetAxial(unit.Pos)
+				totile, _ := m.GetAxial(*unit.Action.ToPos)
+				drawArrow(tile.Pos, totile.Pos, img, &Fractions[unit.FactionId])
+			}
+		}
 	}
 }
 
 type Unit struct {
-	FactionId    int
-	Pos          AxialPos
-	Action       *Action
-	supportUnits int
+	FactionId int
+	Pos       AxialPos
+	Action    *Action
+	Support   int
 }
 
 func NewUnit(pos AxialPos, factionId int) *Unit {
@@ -135,4 +136,15 @@ func NewUnit(pos AxialPos, factionId int) *Unit {
 		Pos:       pos,
 		Action:    NewAction(),
 	}
+}
+
+func (u *Unit) draw(img *ebiten.Image, fraction *Fraction, m *Map) {
+
+	w, h := fraction.images["unit"].Size()
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM = ebiten.GeoM{}
+	tile, _ := m.GetAxial(u.Pos)
+	op.GeoM.Translate(tile.Pos.X-float64(w)/2, tile.Pos.Y-float64(h)/2)
+	img.DrawImage(fraction.images["unit"], op)
 }

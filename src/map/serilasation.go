@@ -26,11 +26,10 @@ func Load(b *bytes.Buffer) *Map {
 	d := gob.NewDecoder(b)
 	checkErr(d.Decode(m))
 
-	m.mapImage = ebiten.NewImage(int(m.Size.X), int(m.Size.X))
+	m.mapImage = ebiten.NewImage(1000, 1000)
 	for _, chunk := range m.Chunks {
 		for i, tile := range chunk.Tiles {
-			tile.chunk = chunk
-			tile.makeReady()
+			tile.makeReady(chunk)
 			chunk.Tiles[i] = tile
 		}
 	}

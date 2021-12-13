@@ -3,6 +3,7 @@ package gameMap
 import (
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
+	"image"
 	"math"
 )
 
@@ -42,18 +43,16 @@ type Tile struct {
 
 	chunk    *Chunk
 	vertices []ebiten.Vertex
-
-	TargetOf []*Unit
 }
 
 func NewTile(q int, r int, chunk *Chunk) (tile Tile) {
-	tile.AxialPos = AxialPos{Q: float64(q), R: float64(r)}.Add(chunk.AxialPos.Mul(AxialPos{chunkSizeQ, chunkSizeR}))
-	tile.chunk = chunk
-	tile.makeReady()
+	tile.AxialPos = AxialPos{Q: float64(q), R: float64(r)}.Add(chunk.AxialPos.Mul(AxialPos{float64(chunk.ChunkSize), float64(chunk.ChunkSize)}))
+	tile.makeReady(chunk)
 	return tile
 }
 
-func (t *Tile) makeReady() {
+func (t *Tile) makeReady(chunk *Chunk) {
+	t.chunk = chunk
 	t.Pos = t.AxialPos.MulFloat(tileSize * 2).ToCard()
 	t.createVertices()
 }
@@ -68,4 +67,16 @@ func (t *Tile) createVertices() {
 		t.vertices[j] = vertex
 	}
 	t.vertices[0].ColorA -= 0.5
+}
+
+// draw draws the hexagon for the Tile
+func (t Tile) draw(img *ebiten.Image) {
+	if !t.Visable {
+		return
+	}
+
+	op := &ebiten.DrawTrianglesOptions{}
+	op.Address = ebiten.AddressUnsafe
+
+	img.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
 }

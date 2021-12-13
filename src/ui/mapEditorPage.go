@@ -2,7 +2,6 @@ package ui
 
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
-	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/blizzy78/ebitenui"
 	"image"
 	"strconv"
@@ -180,7 +179,7 @@ func openNewMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
 		if err != nil {
 			return false
 		}
-		event.Go(event.EventEditorNewMap, CardPos{float64(x), float64(x)})
+		event.Go(event.EventEditorNewMap, x)
 		return true
 	}, 120)
 }

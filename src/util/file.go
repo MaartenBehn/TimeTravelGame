@@ -26,7 +26,7 @@ func SaveMapBufferToFile(name string, buffer *bytes.Buffer) {
 func LoadBufferFromFile(path string) *bytes.Buffer {
 	buf, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Printf("File %s not found.", path)
+		fmt.Printf("File %s not found.\n", path)
 		return nil
 	}
 	return bytes.NewBuffer(buf)

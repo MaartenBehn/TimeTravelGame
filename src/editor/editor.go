@@ -33,7 +33,7 @@ func load(data interface{}) {
 		draw(data.(*ebiten.Image), e)
 	})
 	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
-		e.m = newMap(data.(CardPos))
+		e.m = newMap(data.(int))
 	})
 	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
 		saveMap(data.(string), e)
@@ -79,13 +79,16 @@ func update(e *editor) {
 
 	if e.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		tile := getTile()
+		if tile == nil {
+			return
+		}
 
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.m.U.AddUnitAtTile(tile, &gameMap.FractionBlue)
+			e.m.U.AddUnitAtTile(tile, &gameMap.Fractions[1])
 		} else if e.mode == 2 {
-			e.m.U.AddUnitAtTile(tile, &gameMap.FractionRed)
+			e.m.U.AddUnitAtTile(tile, &gameMap.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
 			_, _, unit := e.m.U.GetUnitAtPos(tile.AxialPos)
 			if unit != nil {
@@ -96,6 +99,9 @@ func update(e *editor) {
 		e.m.Update()
 	} else if e.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		tile := getTile()
+		if tile == nil {
+			return
+		}
 
 		if e.mode == 0 {
 			tile.Visable = false
@@ -121,8 +127,9 @@ func draw(screen *ebiten.Image, e *editor) {
 	}
 }
 
-func newMap(size CardPos) *gameMap.Map {
+func newMap(size int) *gameMap.Map {
 	m := gameMap.NewMap(size)
+	m.CreateChunk(AxialPos{0, 0})
 	return m
 }
 

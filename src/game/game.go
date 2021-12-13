@@ -73,6 +73,9 @@ func update(g *game) {
 
 	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		tile := getTile()
+		if tile == nil {
+			return
+		}
 
 		_, _, unit := g.m.U.GetUnitAtPos(tile.AxialPos)
 		if unit != nil {
@@ -82,6 +85,9 @@ func update(g *game) {
 		g.m.Update()
 	} else if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		tile := getTile()
+		if tile == nil {
+			return
+		}
 
 		_, _, unit := g.m.U.GetUnitAtPos(g.m.U.SelectedUnit)
 
