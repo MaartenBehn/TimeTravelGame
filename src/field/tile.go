@@ -1,4 +1,4 @@
-package gameMap
+package field
 
 import (
 	. "github.com/Stroby241/TimeTravelGame/src/math"
@@ -41,18 +41,18 @@ type Tile struct {
 	AxialPos AxialPos
 	Pos      CardPos
 
-	chunk    *Chunk
+	field    *Field
 	vertices []ebiten.Vertex
 }
 
-func NewTile(q int, r int, chunk *Chunk) (tile Tile) {
-	tile.AxialPos = AxialPos{Q: float64(q), R: float64(r)}.Add(chunk.AxialPos.Mul(AxialPos{float64(chunk.ChunkSize), float64(chunk.ChunkSize)}))
-	tile.makeReady(chunk)
+func NewTile(q int, r int, field *Field) (tile Tile) {
+	tile.AxialPos = AxialPos{Q: float64(q), R: float64(r)}
+	tile.makeReady(field)
 	return tile
 }
 
-func (t *Tile) makeReady(chunk *Chunk) {
-	t.chunk = chunk
+func (t *Tile) makeReady(field *Field) {
+	t.field = field
 	t.Pos = t.AxialPos.MulFloat(tileSize * 2).ToCard()
 	t.createVertices()
 }

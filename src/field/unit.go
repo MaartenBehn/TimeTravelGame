@@ -1,4 +1,4 @@
-package gameMap
+package field
 
 import (
 	. "github.com/Stroby241/TimeTravelGame/src/math"
@@ -86,8 +86,8 @@ func (u *UnitController) AddUnitAtTile(tile *Tile, fraction *Fraction) *Unit {
 	}
 	return unit
 }
-func (u *UnitController) AddUnitAtPos(pos AxialPos, fraction *Fraction, m *Map) *Unit {
-	tile, _ := m.GetAxial(pos)
+func (u *UnitController) AddUnitAtPos(pos AxialPos, fraction *Fraction, f *Field) *Unit {
+	tile := f.GetAxial(pos)
 	if tile == nil {
 		return nil
 	}
@@ -105,18 +105,18 @@ func (u *UnitController) RemoveUnitAtPos(pos AxialPos) {
 	}
 }
 
-func (u *UnitController) draw(img *ebiten.Image, m *Map) {
-	for f, units := range u.Units {
+func (u *UnitController) draw(img *ebiten.Image, f *Field) {
+	for i, units := range u.Units {
 		for _, unit := range units {
-			unit.draw(img, &Fractions[f], m)
+			unit.draw(img, &Fractions[i], f)
 		}
 	}
 
 	for _, units := range u.Units {
 		for _, unit := range units {
 			if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
-				tile, _ := m.GetAxial(unit.Pos)
-				totile, _ := m.GetAxial(*unit.Action.ToPos)
+				tile := f.GetAxial(unit.Pos)
+				totile := f.GetAxial(*unit.Action.ToPos)
 				drawArrow(tile.Pos, totile.Pos, img, &Fractions[unit.FactionId])
 			}
 		}
@@ -138,13 +138,13 @@ func NewUnit(pos AxialPos, factionId int) *Unit {
 	}
 }
 
-func (u *Unit) draw(img *ebiten.Image, fraction *Fraction, m *Map) {
+func (u *Unit) draw(img *ebiten.Image, fraction *Fraction, f *Field) {
 
 	w, h := fraction.images["unit"].Size()
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM = ebiten.GeoM{}
-	tile, _ := m.GetAxial(u.Pos)
+	tile := f.GetAxial(u.Pos)
 	op.GeoM.Translate(tile.Pos.X-float64(w)/2, tile.Pos.Y-float64(h)/2)
 	img.DrawImage(fraction.images["unit"], op)
 }

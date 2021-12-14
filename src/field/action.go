@@ -1,4 +1,4 @@
-package gameMap
+package field
 
 import (
 	. "github.com/Stroby241/TimeTravelGame/src/math"

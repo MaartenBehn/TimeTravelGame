@@ -2,6 +2,7 @@ package editor
 
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
+	"github.com/Stroby241/TimeTravelGame/src/field"
 	"github.com/Stroby241/TimeTravelGame/src/map"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
@@ -14,14 +15,14 @@ func Init() {
 }
 
 type editor struct {
-	m    *gameMap.Map
+	f    *field.Field
 	cam  *util.Camera
 	mode int
 }
 
 func load(data interface{}) {
 	e := &editor{
-		m:    nil,
+		f:    nil,
 		cam:  util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
 		mode: 0,
 	}
@@ -33,13 +34,13 @@ func load(data interface{}) {
 		draw(data.(*ebiten.Image), e)
 	})
 	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
-		e.m = newMap(data.(int))
+		e.f = newField(data.(int))
 	})
 	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
-		saveMap(data.(string), e)
+		saveField(data.(string), e)
 	})
 	loadMapId := event.On(event.EventEditorLoadMap, func(data interface{}) {
-		e.m = loadMap(data.(string))
+		e.f = loadField(data.(string))
 	})
 	modeId := event.On(event.EventEditorSetMode, func(data interface{}) {
 		e.mode = data.(int)
@@ -66,18 +67,18 @@ func update(e *editor) {
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	getTile := func() *gameMap.Tile {
+	getTile := func() *field.Tile {
 		mat := *e.cam.GetMatrix()
 		mat.Invert()
 
 		clickPos := CardPos{}
 		clickPos.X, clickPos.Y = mat.Apply(mouse.X, mouse.Y)
 
-		tile, _ := e.m.GetCard(clickPos)
+		tile, _ := e.f.GetCard(clickPos)
 		return tile
 	}
 
-	if e.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if e.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		tile := getTile()
 		if tile == nil {
 			return
@@ -86,18 +87,18 @@ func update(e *editor) {
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.m.U.AddUnitAtTile(tile, &gameMap.Fractions[1])
+			e.f.U.AddUnitAtTile(tile, &field.Fractions[1])
 		} else if e.mode == 2 {
-			e.m.U.AddUnitAtTile(tile, &gameMap.Fractions[0])
+			e.f.U.AddUnitAtTile(tile, &field.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
-			_, _, unit := e.m.U.GetUnitAtPos(tile.AxialPos)
+			_, _, unit := e.f.U.GetUnitAtPos(tile.AxialPos)
 			if unit != nil {
-				e.m.U.SetSelector(unit.Pos)
+				e.f.U.SetSelector(unit.Pos)
 			}
 		}
 
-		e.m.Update()
-	} else if e.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		e.f.Update()
+	} else if e.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		tile := getTile()
 		if tile == nil {
 			return
@@ -105,46 +106,45 @@ func update(e *editor) {
 
 		if e.mode == 0 {
 			tile.Visable = false
-			e.m.U.RemoveUnitAtTile(tile)
+			e.f.U.RemoveUnitAtTile(tile)
 
 		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
-			e.m.U.RemoveUnitAtTile(tile)
+			e.f.U.RemoveUnitAtTile(tile)
 		} else if e.mode == 3 && tile.Visable {
-			_, _, unit := e.m.U.GetUnitAtPos(e.m.U.SelectedUnit)
+			_, _, unit := e.f.U.GetUnitAtPos(e.f.U.SelectedUnit)
 
 			if unit != nil && tile.Visable {
-				e.m.U.SetAction(unit, tile.AxialPos)
+				e.f.U.SetAction(unit, tile.AxialPos)
 			}
 		}
 
-		e.m.Update()
+		e.f.Update()
 	}
 }
 
 func draw(screen *ebiten.Image, e *editor) {
-	if e.m != nil {
-		e.m.Draw(screen, e.cam)
+	if e.f != nil {
+		e.f.Draw(screen, e.cam)
 	}
 }
 
-func newMap(size int) *gameMap.Map {
-	m := gameMap.NewMap(size)
-	m.CreateChunk(AxialPos{0, 0})
+func newField(size int) *field.Field {
+	m := field.NewField(size)
 	return m
 }
 
-func saveMap(name string, e *editor) {
+func saveField(name string, e *editor) {
 	if e.m == nil {
 		return
 	}
-	util.SaveMapBufferToFile(name, e.m.Save())
+	util.SaveMapBufferToFile(name, e.f.Save())
 }
 
-func loadMap(name string) *gameMap.Map {
+func loadField(name string) *field.Field {
 	buffer := util.LoadMapBufferFromFile(name)
 	if buffer == nil {
 		return nil
 	}
-	m := gameMap.Load(buffer)
+	m := field.Load(buffer)
 	return m
 }

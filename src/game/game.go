@@ -2,6 +2,7 @@ package game
 
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
+	"github.com/Stroby241/TimeTravelGame/src/field"
 	gameMap "github.com/Stroby241/TimeTravelGame/src/map"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
@@ -60,7 +61,7 @@ func update(g *game) {
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	getTile := func() *gameMap.Tile {
+	getTile := func() *field.Tile {
 		mat := *g.cam.GetMatrix()
 		mat.Invert()
 
@@ -110,6 +111,6 @@ func loadMap(name string) *gameMap.Map {
 	if buffer == nil {
 		return nil
 	}
-	m := gameMap.Load(buffer)
+	m := field.Load(buffer)
 	return m
 }

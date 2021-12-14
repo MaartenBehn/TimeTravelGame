@@ -1,0 +1,45 @@
+---------- Update Map ----------
+---------------------------- Draw Arrow ---------------------------
+Draw Selector
+Internal image sizes:
+  2: (16, 16)
+  3: (16, 16)
+  4: (16, 16)
+  5: (16, 16)
+  6: (16, 16)
+  7: (16, 16)
+  8: (16, 16)
+  9: (16, 16)
+  10: (16, 16)
+  11: (16, 16)
+  12: (16, 16)
+  13: (16, 16)
+  14: (16, 16)
+  15: (16, 16)
+  16: (16, 16)
+  17: (16, 16)
+  18: (2048, 1024)
+  19: (1024, 694)
+  21: (2048, 1024)
+  22: (2048, 1024)
+  25: (2048, 2048)
+  27: (1024, 1024)
+Graphics commands:
+  new-image: result: 27, width: 1002, height: 1002
+  draw-triangles: dst: 27 <- src: [2, (nil), (nil), (nil)], dst region: (x:0, y:0, width:1024, height:1024), num of indices: 6, colorm: {}, mode: clear, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [25, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 6, colorm: {}, mode: copy, filter: nearest, address: unsafe, even-odd: false
+  replace-pixels: dst: 25, len(args): 1
+  draw-triangles: dst: 27 <- src: [25, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 6, colorm: {}, mode: copy, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [4, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 270, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [5, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 18, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [10, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 18, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [11, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 6, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [14, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 6, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [13, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 6, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 27 <- src: [12, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1000, height:1000), num of indices: 12, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 18 <- src: [25, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1024, height:694), num of indices: 6, colorm: {}, mode: copy, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 18 <- src: [27, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1024, height:694), num of indices: 6, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 18 <- src: [25, (nil), (nil), (nil)], dst region: (x:1, y:1, width:1024, height:694), num of indices: 552, colorm: {}, mode: source-over, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 19 (screen) <- src: [25, (nil), (nil), (nil)], dst region: (x:0, y:0, width:1024, height:694), num of indices: 6, colorm: {}, mode: copy, filter: nearest, address: unsafe, even-odd: false
+  draw-triangles: dst: 19 (screen) <- src: [18, (nil), (nil), (nil)], dst region: (x:0, y:0, width:1024, height:694), num of indices: 6, colorm: {}, mode: copy, filter: screen, address: unsafe, even-odd: false
+----

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/Stroby241/TimeTravelGame/src/editor"
 	"github.com/Stroby241/TimeTravelGame/src/event"
+	gameMap "github.com/Stroby241/TimeTravelGame/src/field"
 	"github.com/Stroby241/TimeTravelGame/src/game"
-	gameMap "github.com/Stroby241/TimeTravelGame/src/map"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/blizzy78/ebitenui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -17,7 +17,6 @@ const (
 )
 
 type Game struct {
-	u  *UnitController
 	ui *ebitenui.UI
 }
 
@@ -41,7 +40,6 @@ func Init() {
 
 	g = &Game{
 		ui: uiObj,
-		u:  NewUnitController(4),
 	}
 
 	event.Go(event.EventUIShowPanel, ui.PageStart)

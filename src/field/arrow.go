@@ -1,7 +1,9 @@
-package gameMap
+package field
 
 import (
+	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
+	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
 	"math"
 )
@@ -15,6 +17,10 @@ const (
 )
 
 func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction) {
+	if util.Debug {
+		fmt.Println("---------------------------- Draw Arrow ---------------------------")
+	}
+
 	vec := fromPos.Sub(toPos)
 
 	if vec.X == 0 && vec.Y == 0 {
@@ -64,24 +70,20 @@ func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 	}
 	op.GeoM.Translate(toPos.X, toPos.Y)
 
-	img.DrawImage(fraction.images["arrow_tip"], op)
-
 	// Arrow End
-	op = &ebiten.DrawImageOptions{}
+	op2 := &ebiten.DrawImageOptions{}
 	w, h = fraction.images["arrow_end"].Size()
-	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+	op2.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 
 	if firstLine == lineLeft {
-		op.GeoM.Scale(-1, 1)
+		op2.GeoM.Scale(-1, 1)
 	} else if firstLine == lineUp {
-		op.GeoM.Rotate(-math.Pi / 2)
+		op2.GeoM.Rotate(-math.Pi / 2)
 	} else if firstLine == lineDown {
-		op.GeoM.Rotate(math.Pi / 2)
+		op2.GeoM.Rotate(math.Pi / 2)
 	}
 
-	op.GeoM.Translate(fromPos.X, fromPos.Y)
-
-	img.DrawImage(fraction.images["arrow_end"], op)
+	op2.GeoM.Translate(fromPos.X, fromPos.Y)
 
 	cornerPos := fromPos
 	if firstLine == lineRigth || firstLine == lineLeft {
@@ -90,70 +92,70 @@ func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 		cornerPos.Y += -vec.Y
 	}
 
+	op3 := &ebiten.DrawImageOptions{}
+	op5 := &ebiten.DrawImageOptions{}
 	// Arrow Corner
 	if secondLine != lineNone {
-		op = &ebiten.DrawImageOptions{}
 		w, h = fraction.images["arrow_corner"].Size()
-		op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+		op3.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 
 		if firstLine == lineLeft {
-			op.GeoM.Scale(-1, 1)
+			op3.GeoM.Scale(-1, 1)
 		}
 		if firstLine == lineDown {
-			op.GeoM.Scale(1, -1)
+			op3.GeoM.Scale(1, -1)
 		}
 		if secondLine == lineUp {
-			op.GeoM.Scale(1, -1)
+			op3.GeoM.Scale(1, -1)
 		}
 		if secondLine == lineRigth {
-			op.GeoM.Scale(-1, 1)
+			op3.GeoM.Scale(-1, 1)
 		}
-		op.GeoM.Translate(cornerPos.X, cornerPos.Y)
+		op3.GeoM.Translate(cornerPos.X, cornerPos.Y)
 
-		img.DrawImage(fraction.images["arrow_corner"], op)
+		if secondLine == lineRigth {
+			op5.GeoM.Scale((vec.X+10)/10, 1)
+			op5.GeoM.Translate(cornerPos.X-vec.X-5, cornerPos.Y-5)
+		} else if secondLine == lineLeft {
+			op5.GeoM.Scale((vec.X-10)/10, 1)
+			op5.GeoM.Translate(cornerPos.X-vec.X+5, cornerPos.Y-5)
+		} else if secondLine == lineDown {
+			op5.GeoM.Rotate(math.Pi / 2)
+			op5.GeoM.Scale(1, (vec.Y+10)/10)
+			op5.GeoM.Translate(cornerPos.X+5, cornerPos.Y-vec.Y-5)
+		} else if secondLine == lineUp {
+			op5.GeoM.Rotate(math.Pi / 2)
+			op5.GeoM.Scale(1, (vec.Y-10)/10)
+			op5.GeoM.Translate(cornerPos.X+5, cornerPos.Y-vec.Y+5)
+		}
 	}
 
 	// First Line
 	// TODO: Uses 10 as Image size change to image size
-	op = &ebiten.DrawImageOptions{}
+	op4 := &ebiten.DrawImageOptions{}
 
 	if firstLine == lineRigth {
-		op.GeoM.Scale((vec.X+10)/10, 1)
-		op.GeoM.Translate(fromPos.X-vec.X-5, fromPos.Y-5)
+		op4.GeoM.Scale((vec.X+10)/10, 1)
+		op4.GeoM.Translate(fromPos.X-vec.X-5, fromPos.Y-5)
 	} else if firstLine == lineLeft {
-		op.GeoM.Scale((vec.X-10)/10, 1)
-		op.GeoM.Translate(fromPos.X-vec.X+5, fromPos.Y-5)
+		op4.GeoM.Scale((vec.X-10)/10, 1)
+		op4.GeoM.Translate(fromPos.X-vec.X+5, fromPos.Y-5)
 	} else if firstLine == lineDown {
-		op.GeoM.Rotate(math.Pi / 2)
-		op.GeoM.Scale(1, (vec.Y+10)/10)
-		op.GeoM.Translate(fromPos.X+5, fromPos.Y-vec.Y-5)
+		op4.GeoM.Rotate(math.Pi / 2)
+		op4.GeoM.Scale(1, (vec.Y+10)/10)
+		op4.GeoM.Translate(fromPos.X+5, fromPos.Y-vec.Y-5)
 	} else if firstLine == lineUp {
-		op.GeoM.Rotate(math.Pi / 2)
-		op.GeoM.Scale(1, (vec.Y-10)/10)
-		op.GeoM.Translate(fromPos.X+5, fromPos.Y-vec.Y+5)
+		op4.GeoM.Rotate(math.Pi / 2)
+		op4.GeoM.Scale(1, (vec.Y-10)/10)
+		op4.GeoM.Translate(fromPos.X+5, fromPos.Y-vec.Y+5)
 	}
 
-	img.DrawImage(fraction.images["arrow_straigth"], op)
+	img.DrawImage(fraction.images["arrow_tip"], op)
+	img.DrawImage(fraction.images["arrow_end"], op2)
+	img.DrawImage(fraction.images["arrow_straigth"], op4)
 
-	// Second Line
 	if secondLine != lineNone {
-		op = &ebiten.DrawImageOptions{}
-		if secondLine == lineRigth {
-			op.GeoM.Scale((vec.X+10)/10, 1)
-			op.GeoM.Translate(cornerPos.X-vec.X-5, cornerPos.Y-5)
-		} else if secondLine == lineLeft {
-			op.GeoM.Scale((vec.X-10)/10, 1)
-			op.GeoM.Translate(cornerPos.X-vec.X+5, cornerPos.Y-5)
-		} else if secondLine == lineDown {
-			op.GeoM.Rotate(math.Pi / 2)
-			op.GeoM.Scale(1, (vec.Y+10)/10)
-			op.GeoM.Translate(cornerPos.X+5, cornerPos.Y-vec.Y-5)
-		} else if secondLine == lineUp {
-			op.GeoM.Rotate(math.Pi / 2)
-			op.GeoM.Scale(1, (vec.Y-10)/10)
-			op.GeoM.Translate(cornerPos.X+5, cornerPos.Y-vec.Y+5)
-		}
+		img.DrawImage(fraction.images["arrow_corner"], op3)
+		img.DrawImage(fraction.images["arrow_straigth"], op5)
 	}
-
-	img.DrawImage(fraction.images["arrow_straigth"], op)
 }
