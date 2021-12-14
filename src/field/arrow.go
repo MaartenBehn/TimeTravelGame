@@ -18,7 +18,7 @@ const (
 
 func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction) {
 	if util.Debug {
-		fmt.Println("---------------------------- Draw Arrow ---------------------------")
+		fmt.Println("---------------- Draw Arrow --------------")
 	}
 
 	vec := fromPos.Sub(toPos)

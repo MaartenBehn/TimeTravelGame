@@ -3,7 +3,6 @@ package game
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/Stroby241/TimeTravelGame/src/field"
-	gameMap "github.com/Stroby241/TimeTravelGame/src/map"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/Stroby241/TimeTravelGame/src/util"
@@ -15,13 +14,13 @@ func Init() {
 }
 
 type game struct {
-	m   *gameMap.Map
+	f   *field.Field
 	cam *util.Camera
 }
 
 func load(data interface{}) {
 	g := &game{
-		m:   nil,
+		f:   nil,
 		cam: util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
 	}
 
@@ -34,12 +33,12 @@ func load(data interface{}) {
 	})
 
 	loadMapId := event.On(event.EventGameLoadMap, func(data interface{}) {
-		g.m = loadMap(data.(string))
+		g.f = field.LoadField(data.(string))
 	})
 
 	submitRoundId := event.On(event.EventGameSubmitRound, func(data interface{}) {
-		g.m.U.SubmitRound()
-		g.m.Update()
+		g.f.U.SubmitRound()
+		g.f.Update()
 	})
 
 	var unloadId event.ReciverId
@@ -68,49 +67,41 @@ func update(g *game) {
 		clickPos := CardPos{}
 		clickPos.X, clickPos.Y = mat.Apply(mouse.X, mouse.Y)
 
-		tile, _ := g.m.GetCard(clickPos)
+		tile := g.f.GetCard(clickPos)
 		return tile
 	}
 
-	if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if g.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		tile := getTile()
 		if tile == nil {
 			return
 		}
 
-		_, _, unit := g.m.U.GetUnitAtPos(tile.AxialPos)
+		_, _, unit := g.f.U.GetUnitAtPos(tile.AxialPos)
 		if unit != nil {
-			g.m.U.SetSelector(unit.Pos)
+			g.f.S.Pos = unit.Pos
+			g.f.S.Visible = true
 		}
 
-		g.m.Update()
-	} else if g.m != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		g.f.Update()
+	} else if g.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		tile := getTile()
 		if tile == nil {
 			return
 		}
 
-		_, _, unit := g.m.U.GetUnitAtPos(g.m.U.SelectedUnit)
+		_, _, unit := g.f.U.GetUnitAtPos(g.f.S.Pos)
 
 		if unit != nil && tile.Visable {
-			g.m.U.SetAction(unit, tile.AxialPos)
+			g.f.U.SetAction(unit, tile.AxialPos)
 		}
 
-		g.m.Update()
+		g.f.Update()
 	}
 }
 
 func draw(screen *ebiten.Image, g *game) {
-	if g.m != nil {
-		g.m.Draw(screen, g.cam)
+	if g.f != nil {
+		g.f.Draw(screen, g.cam)
 	}
-}
-
-func loadMap(name string) *gameMap.Map {
-	buffer := util.LoadMapBufferFromFile(name)
-	if buffer == nil {
-		return nil
-	}
-	m := field.Load(buffer)
-	return m
 }

@@ -3,27 +3,39 @@ package field
 import (
 	"bytes"
 	"encoding/gob"
+	"github.com/Stroby241/TimeTravelGame/src/util"
 )
 
-var versions = []string{
-	"0.1",
-}
+func (f *Field) Save(name string) {
 
-func (f *Field) Save() *bytes.Buffer {
-
-	var b bytes.Buffer
-	e := gob.NewEncoder(&b)
+	var buffer bytes.Buffer
+	e := gob.NewEncoder(&buffer)
 	if err := e.Encode(*f); err != nil {
 		panic(err)
 	}
-	return &b
+	util.SaveMapBufferToFile(name, &buffer)
 }
 
-func Load(b *bytes.Buffer) *Field {
+func LoadField(name string) *Field {
+	buffer := util.LoadMapBufferFromFile(name)
+	if buffer == nil {
+		return nil
+	}
 
 	f := &Field{}
-	d := gob.NewDecoder(b)
+	d := gob.NewDecoder(buffer)
 	checkErr(d.Decode(f))
+
+	f.makeReady()
+
+	for i, tile := range f.Tiles {
+		tile.makeReady(f)
+		f.Tiles[i] = tile
+	}
+
+	f.U.makeReady()
+
+	f.Update()
 
 	return f
 }

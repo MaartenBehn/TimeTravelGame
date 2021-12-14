@@ -1,7 +1,7 @@
 package field
 
 import (
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 	"time"
@@ -93,5 +93,4 @@ func Init() {
 
 		Fractions[i] = fraction
 	}
-
 }

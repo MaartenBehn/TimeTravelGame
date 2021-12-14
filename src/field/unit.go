@@ -36,8 +36,7 @@ func getFractionIndex(f *Fraction) int {
 }
 
 type UnitController struct {
-	Units        [][]*Unit
-	SelectedUnit AxialPos
+	Units [][]*Unit
 
 	moveUnits    []*Unit
 	supportUnits []*Unit

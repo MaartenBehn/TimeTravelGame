@@ -3,7 +3,6 @@ package editor
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/Stroby241/TimeTravelGame/src/field"
-	"github.com/Stroby241/TimeTravelGame/src/map"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/Stroby241/TimeTravelGame/src/util"
@@ -34,13 +33,13 @@ func load(data interface{}) {
 		draw(data.(*ebiten.Image), e)
 	})
 	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
-		e.f = newField(data.(int))
+		e.f = field.NewField(data.(int))
 	})
 	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
-		saveField(data.(string), e)
+		e.f.Save(data.(string))
 	})
 	loadMapId := event.On(event.EventEditorLoadMap, func(data interface{}) {
-		e.f = loadField(data.(string))
+		e.f = field.LoadField(data.(string))
 	})
 	modeId := event.On(event.EventEditorSetMode, func(data interface{}) {
 		e.mode = data.(int)
@@ -74,7 +73,7 @@ func update(e *editor) {
 		clickPos := CardPos{}
 		clickPos.X, clickPos.Y = mat.Apply(mouse.X, mouse.Y)
 
-		tile, _ := e.f.GetCard(clickPos)
+		tile := e.f.GetCard(clickPos)
 		return tile
 	}
 
@@ -93,7 +92,8 @@ func update(e *editor) {
 		} else if e.mode == 3 && tile.Visable {
 			_, _, unit := e.f.U.GetUnitAtPos(tile.AxialPos)
 			if unit != nil {
-				e.f.U.SetSelector(unit.Pos)
+				e.f.S.Pos = unit.Pos
+				e.f.S.Visible = true
 			}
 		}
 
@@ -110,8 +110,8 @@ func update(e *editor) {
 
 		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
 			e.f.U.RemoveUnitAtTile(tile)
-		} else if e.mode == 3 && tile.Visable {
-			_, _, unit := e.f.U.GetUnitAtPos(e.f.U.SelectedUnit)
+		} else if e.mode == 3 && tile.Visable && e.f.S.Visible {
+			_, _, unit := e.f.U.GetUnitAtPos(e.f.S.Pos)
 
 			if unit != nil && tile.Visable {
 				e.f.U.SetAction(unit, tile.AxialPos)
@@ -126,25 +126,4 @@ func draw(screen *ebiten.Image, e *editor) {
 	if e.f != nil {
 		e.f.Draw(screen, e.cam)
 	}
-}
-
-func newField(size int) *field.Field {
-	m := field.NewField(size)
-	return m
-}
-
-func saveField(name string, e *editor) {
-	if e.m == nil {
-		return
-	}
-	util.SaveMapBufferToFile(name, e.f.Save())
-}
-
-func loadField(name string) *field.Field {
-	buffer := util.LoadMapBufferFromFile(name)
-	if buffer == nil {
-		return nil
-	}
-	m := field.Load(buffer)
-	return m
 }
