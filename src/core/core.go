@@ -5,7 +5,6 @@ import (
 	"github.com/Stroby241/TimeTravelGame/src/editor"
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	gameMap "github.com/Stroby241/TimeTravelGame/src/field"
-	"github.com/Stroby241/TimeTravelGame/src/game"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/blizzy78/ebitenui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -26,7 +25,7 @@ func Init() {
 	event.Init()
 	gameMap.Init()
 	editor.Init()
-	game.Init()
+	//game.Init()
 
 	ebiten.SetWindowSize(1024, 840)
 	ebiten.SetWindowTitle("Time Travel Game")

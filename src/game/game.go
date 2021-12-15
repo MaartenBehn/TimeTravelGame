@@ -1,5 +1,6 @@
 package game
 
+/*
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/Stroby241/TimeTravelGame/src/field"
@@ -105,3 +106,5 @@ func draw(screen *ebiten.Image, g *game) {
 		g.f.Draw(screen, g.cam)
 	}
 }
+
+*/

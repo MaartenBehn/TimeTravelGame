@@ -33,8 +33,6 @@ func LoadField(name string) *Field {
 		f.Tiles[i] = tile
 	}
 
-	f.U.makeReady()
-
 	f.Update()
 
 	return f

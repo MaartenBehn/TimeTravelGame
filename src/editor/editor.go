@@ -14,6 +14,7 @@ func Init() {
 }
 
 type editor struct {
+	t    *field.Timeline
 	f    *field.Field
 	cam  *util.Camera
 	mode int
@@ -21,6 +22,7 @@ type editor struct {
 
 func load(data interface{}) {
 	e := &editor{
+		t:    field.NewTimeline(),
 		f:    nil,
 		cam:  util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
 		mode: 0,
@@ -34,6 +36,7 @@ func load(data interface{}) {
 	})
 	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
 		e.f = field.NewField(data.(int))
+		e.t.Fields[CardPos{}] = e.f
 	})
 	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
 		e.f.Save(data.(string))
@@ -86,18 +89,18 @@ func update(e *editor) {
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.f.U.AddUnitAtTile(tile, &field.Fractions[1])
+			e.t.U.AddUnitAtTile(tile, &field.Fractions[1])
 		} else if e.mode == 2 {
-			e.f.U.AddUnitAtTile(tile, &field.Fractions[0])
+			e.t.U.AddUnitAtTile(tile, &field.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
-			_, _, unit := e.f.U.GetUnitAtPos(tile.AxialPos)
+			_, _, unit := e.t.U.GetUnitAtPos(tile.AxialPos)
 			if unit != nil {
-				e.f.S.Pos = unit.Pos
-				e.f.S.Visible = true
+				e.t.S.Pos = unit.Pos
+				e.t.S.Visible = true
 			}
 		}
 
-		e.f.Update()
+		e.t.Update()
 	} else if e.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		tile := getTile()
 		if tile == nil {
@@ -106,24 +109,22 @@ func update(e *editor) {
 
 		if e.mode == 0 {
 			tile.Visable = false
-			e.f.U.RemoveUnitAtTile(tile)
+			e.t.U.RemoveUnitAtTile(tile)
 
 		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
-			e.f.U.RemoveUnitAtTile(tile)
-		} else if e.mode == 3 && tile.Visable && e.f.S.Visible {
-			_, _, unit := e.f.U.GetUnitAtPos(e.f.S.Pos)
+			e.t.U.RemoveUnitAtTile(tile)
+		} else if e.mode == 3 && tile.Visable && e.t.S.Visible {
+			_, _, unit := e.t.U.GetUnitAtPos(e.t.S.Pos)
 
 			if unit != nil && tile.Visable {
-				e.f.U.SetAction(unit, tile.AxialPos)
+				e.t.U.SetAction(unit, tile.AxialPos)
 			}
 		}
 
-		e.f.Update()
+		e.t.Update()
 	}
 }
 
 func draw(screen *ebiten.Image, e *editor) {
-	if e.f != nil {
-		e.f.Draw(screen, e.cam)
-	}
+	e.t.Draw(screen, e.cam)
 }

@@ -16,7 +16,7 @@ const (
 	lineLeft  = 4
 )
 
-func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction) {
+func DrawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction) {
 	if util.Debug {
 		fmt.Println("---------------- Draw Arrow --------------")
 	}
@@ -50,7 +50,7 @@ func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 
 	// Arrow Tip
 	op := &ebiten.DrawImageOptions{}
-	w, h := fraction.images["arrow_tip"].Size()
+	w, h := fraction.Images["arrow_tip"].Size()
 	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 
 	if secondLine == lineLeft {
@@ -72,7 +72,7 @@ func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 
 	// Arrow End
 	op2 := &ebiten.DrawImageOptions{}
-	w, h = fraction.images["arrow_end"].Size()
+	w, h = fraction.Images["arrow_end"].Size()
 	op2.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 
 	if firstLine == lineLeft {
@@ -96,7 +96,7 @@ func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 	op5 := &ebiten.DrawImageOptions{}
 	// Arrow Corner
 	if secondLine != lineNone {
-		w, h = fraction.images["arrow_corner"].Size()
+		w, h = fraction.Images["arrow_corner"].Size()
 		op3.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 
 		if firstLine == lineLeft {
@@ -150,12 +150,12 @@ func drawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 		op4.GeoM.Translate(fromPos.X+5, fromPos.Y-vec.Y+5)
 	}
 
-	img.DrawImage(fraction.images["arrow_tip"], op)
-	img.DrawImage(fraction.images["arrow_end"], op2)
-	img.DrawImage(fraction.images["arrow_straigth"], op4)
+	img.DrawImage(fraction.Images["arrow_tip"], op)
+	img.DrawImage(fraction.Images["arrow_end"], op2)
+	img.DrawImage(fraction.Images["arrow_straigth"], op4)
 
 	if secondLine != lineNone {
-		img.DrawImage(fraction.images["arrow_corner"], op3)
-		img.DrawImage(fraction.images["arrow_straigth"], op5)
+		img.DrawImage(fraction.Images["arrow_corner"], op3)
+		img.DrawImage(fraction.Images["arrow_straigth"], op5)
 	}
 }

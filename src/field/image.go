@@ -84,12 +84,12 @@ func Init() {
 		arrowEndImg.Fill(fraction.colorLigth)
 		arrowEndImg.DrawImage(arrowEndImgMask, op)
 
-		fraction.images = map[string]*ebiten.Image{}
-		fraction.images["unit"] = unitImg
-		fraction.images["arrow_tip"] = arrowTipImg
-		fraction.images["arrow_straigth"] = arrowStraigthImg
-		fraction.images["arrow_corner"] = arrowCornerImg
-		fraction.images["arrow_end"] = arrowEndImg
+		fraction.Images = map[string]*ebiten.Image{}
+		fraction.Images["unit"] = unitImg
+		fraction.Images["arrow_tip"] = arrowTipImg
+		fraction.Images["arrow_straigth"] = arrowStraigthImg
+		fraction.Images["arrow_corner"] = arrowCornerImg
+		fraction.Images["arrow_end"] = arrowEndImg
 
 		Fractions[i] = fraction
 	}

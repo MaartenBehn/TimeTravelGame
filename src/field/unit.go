@@ -12,7 +12,7 @@ type Fraction struct {
 	color      color.Color
 	colorLigth color.Color
 
-	images map[string]*ebiten.Image
+	Images map[string]*ebiten.Image
 }
 
 var Fractions = []Fraction{
@@ -116,7 +116,7 @@ func (u *UnitController) draw(img *ebiten.Image, f *Field) {
 			if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
 				tile := f.GetAxial(unit.Pos)
 				totile := f.GetAxial(*unit.Action.ToPos)
-				drawArrow(tile.Pos, totile.Pos, img, &Fractions[unit.FactionId])
+				DrawArrow(tile.Pos, totile.Pos, img, &Fractions[unit.FactionId])
 			}
 		}
 	}
@@ -139,11 +139,11 @@ func NewUnit(pos AxialPos, factionId int) *Unit {
 
 func (u *Unit) draw(img *ebiten.Image, fraction *Fraction, f *Field) {
 
-	w, h := fraction.images["unit"].Size()
+	w, h := fraction.Images["unit"].Size()
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM = ebiten.GeoM{}
 	tile := f.GetAxial(u.Pos)
 	op.GeoM.Translate(tile.Pos.X-float64(w)/2, tile.Pos.Y-float64(h)/2)
-	img.DrawImage(fraction.images["unit"], op)
+	img.DrawImage(fraction.Images["unit"], op)
 }
