@@ -15,15 +15,13 @@ func Init() {
 
 type editor struct {
 	t    *field.Timeline
-	f    *field.Field
 	cam  *util.Camera
 	mode int
 }
 
 func load(data interface{}) {
 	e := &editor{
-		t:    field.NewTimeline(),
-		f:    nil,
+		t:    nil,
 		cam:  util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
 		mode: 0,
 	}
@@ -35,14 +33,14 @@ func load(data interface{}) {
 		draw(data.(*ebiten.Image), e)
 	})
 	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
-		e.f = field.NewField(data.(int))
-		e.t.Fields[CardPos{}] = e.f
+		e.t = field.NewTimeline(data.(int))
+		e.t.AddField(CardPos{})
 	})
 	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
-		e.f.Save(data.(string))
+		e.t.Save(data.(string))
 	})
 	loadMapId := event.On(event.EventEditorLoadMap, func(data interface{}) {
-		e.f = field.LoadField(data.(string))
+		e.t = field.LoadTimeline(data.(string))
 	})
 	modeId := event.On(event.EventEditorSetMode, func(data interface{}) {
 		e.mode = data.(int)
@@ -69,19 +67,19 @@ func update(e *editor) {
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
-	getTile := func() *field.Tile {
+	getTile := func() (*field.Tile, *field.Field) {
 		mat := *e.cam.GetMatrix()
 		mat.Invert()
 
 		clickPos := CardPos{}
 		clickPos.X, clickPos.Y = mat.Apply(mouse.X, mouse.Y)
 
-		tile := e.f.GetCard(clickPos)
-		return tile
+		tile, field := e.t.Get(clickPos)
+		return tile, field
 	}
 
-	if e.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		tile := getTile()
+	if e.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		tile, f := getTile()
 		if tile == nil {
 			return
 		}
@@ -89,35 +87,36 @@ func update(e *editor) {
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.t.U.AddUnitAtTile(tile, &field.Fractions[1])
+			e.t.U.AddUnitAtTile(f, tile, &field.Fractions[1])
 		} else if e.mode == 2 {
-			e.t.U.AddUnitAtTile(tile, &field.Fractions[0])
+			e.t.U.AddUnitAtTile(f, tile, &field.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
-			_, _, unit := e.t.U.GetUnitAtPos(tile.AxialPos)
+			_, unit := e.t.U.GetUnitAtPos(CardPos{}, tile.AxialPos)
 			if unit != nil {
+				e.t.S.FieldPos = f.Pos
 				e.t.S.Pos = unit.Pos
 				e.t.S.Visible = true
 			}
 		}
 
 		e.t.Update()
-	} else if e.f != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		tile := getTile()
+	} else if e.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		tile, f := getTile()
 		if tile == nil {
 			return
 		}
 
 		if e.mode == 0 {
 			tile.Visable = false
-			e.t.U.RemoveUnitAtTile(tile)
+			e.t.U.RemoveUnitAtTile(f, tile)
 
 		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
-			e.t.U.RemoveUnitAtTile(tile)
+			e.t.U.RemoveUnitAtTile(f, tile)
 		} else if e.mode == 3 && tile.Visable && e.t.S.Visible {
-			_, _, unit := e.t.U.GetUnitAtPos(e.t.S.Pos)
+			_, unit := e.t.U.GetUnitAtPos(CardPos{}, e.t.S.Pos)
 
 			if unit != nil && tile.Visable {
-				e.t.U.SetAction(unit, tile.AxialPos)
+				e.t.U.SetAction(unit, f.Pos, tile.AxialPos)
 			}
 		}
 
@@ -126,5 +125,9 @@ func update(e *editor) {
 }
 
 func draw(screen *ebiten.Image, e *editor) {
+	if e.t == nil {
+		return
+	}
+
 	e.t.Draw(screen, e.cam)
 }

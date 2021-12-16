@@ -36,7 +36,7 @@ func getFractionIndex(f *Fraction) int {
 }
 
 type UnitController struct {
-	Units [][]*Unit
+	Units []*Unit
 
 	moveUnits    []*Unit
 	supportUnits []*Unit
@@ -44,94 +44,94 @@ type UnitController struct {
 
 func NewUnitController() *UnitController {
 	u := &UnitController{
-		Units: make([][]*Unit, len(Fractions)),
+		Units: []*Unit{},
 	}
 	u.makeReady()
 	return u
 }
 func (u *UnitController) makeReady() {
-	for _, units := range u.Units {
-		for _, unit := range units {
-			if unit.Action.Kind == actionMove {
+	u.moveUnits = []*Unit{}
+	u.supportUnits = []*Unit{}
 
-				u.moveUnits = append(u.moveUnits, unit)
+	for _, unit := range u.Units {
+		if unit.Action.Kind == actionMove {
 
-			} else if unit.Action.Kind == actionSupport {
+			u.moveUnits = append(u.moveUnits, unit)
 
-				u.supportUnits = append(u.supportUnits, unit)
-			}
+		} else if unit.Action.Kind == actionSupport {
+
+			u.supportUnits = append(u.supportUnits, unit)
 		}
 	}
 }
 
-func (u *UnitController) GetUnitAtPos(pos AxialPos) (*Fraction, int, *Unit) {
-	for f, units := range u.Units {
-		for i, unit := range units {
-			if unit.Pos == pos {
-				return &Fractions[f], i, unit
-			}
+func (u *UnitController) GetUnitAtPos(fieldPos CardPos, pos AxialPos) (int, *Unit) {
+	for i, unit := range u.Units {
+		if unit.FieldPos == fieldPos && unit.Pos == pos {
+			return i, unit
 		}
 	}
-	return nil, -1, nil
+	return -1, nil
 }
 
-func (u *UnitController) AddUnitAtTile(tile *Tile, fraction *Fraction) *Unit {
-	_, _, unit := u.GetUnitAtPos(tile.AxialPos)
+func (u *UnitController) AddUnitAtTile(field *Field, tile *Tile, fraction *Fraction) *Unit {
+	_, unit := u.GetUnitAtPos(field.Pos, tile.AxialPos)
 	if unit == nil && tile.Visable {
 		id := getFractionIndex(fraction)
 
-		unit = NewUnit(tile.AxialPos, id)
-		u.Units[id] = append(u.Units[id], unit)
+		unit = NewUnit(field.Pos, tile.AxialPos, id)
+		u.Units = append(u.Units, unit)
 	}
 	return unit
 }
-func (u *UnitController) AddUnitAtPos(pos AxialPos, fraction *Fraction, f *Field) *Unit {
-	tile := f.GetAxial(pos)
-	if tile == nil {
-		return nil
-	}
-	return u.AddUnitAtTile(tile, fraction)
-}
 
-func (u *UnitController) RemoveUnitAtTile(tile *Tile) {
-	u.RemoveUnitAtPos(tile.AxialPos)
+func (u *UnitController) RemoveUnitAtTile(field *Field, tile *Tile) {
+	u.RemoveUnitAtPos(field.Pos, tile.AxialPos)
 }
-func (u *UnitController) RemoveUnitAtPos(pos AxialPos) {
-	f, i, unit := u.GetUnitAtPos(pos)
+func (u *UnitController) RemoveUnitAtPos(fieldPos CardPos, pos AxialPos) {
+	i, unit := u.GetUnitAtPos(fieldPos, pos)
 	if unit != nil {
-		j := getFractionIndex(f)
-		u.Units[j] = append(u.Units[j][:i], u.Units[j][i+1:]...)
+		u.Units = append(u.Units[:i], u.Units[i+1:]...)
 	}
 }
 
 func (u *UnitController) draw(img *ebiten.Image, f *Field) {
-	for i, units := range u.Units {
-		for _, unit := range units {
-			unit.draw(img, &Fractions[i], f)
+	for _, unit := range u.Units {
+		if unit.FieldPos == f.Pos {
+			unit.draw(img, &Fractions[unit.FactionId], f)
 		}
 	}
 
-	for _, units := range u.Units {
-		for _, unit := range units {
-			if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
-				tile := f.GetAxial(unit.Pos)
-				totile := f.GetAxial(*unit.Action.ToPos)
-				DrawArrow(tile.Pos, totile.Pos, img, &Fractions[unit.FactionId])
-			}
+	for _, unit := range u.Units {
+		if unit.FieldPos == f.Pos && (unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport) {
+			tile := f.GetAxial(unit.Pos)
+			totile := f.GetAxial(unit.Action.ToPos)
+			DrawArrow(tile.Pos, totile.Pos, img, &Fractions[unit.FactionId])
+		}
+	}
+}
+
+func (u *UnitController) CopyField(fromField *Field, toField *Field) {
+	for _, unit := range u.Units {
+		if unit.FieldPos == fromField.Pos {
+			copyUnit := unit.copyToField(toField)
+			u.Units = append(u.Units, copyUnit)
 		}
 	}
 }
 
 type Unit struct {
 	FactionId int
+	FieldPos  CardPos
 	Pos       AxialPos
 	Action    *Action
 	Support   int
 }
 
-func NewUnit(pos AxialPos, factionId int) *Unit {
+func NewUnit(fieldPos CardPos, pos AxialPos, factionId int) *Unit {
 	return &Unit{
 		FactionId: factionId,
+		FieldPos:  fieldPos,
 		Pos:       pos,
 		Action:    NewAction(),
 	}
@@ -146,4 +146,17 @@ func (u *Unit) draw(img *ebiten.Image, fraction *Fraction, f *Field) {
 	tile := f.GetAxial(u.Pos)
 	op.GeoM.Translate(tile.Pos.X-float64(w)/2, tile.Pos.Y-float64(h)/2)
 	img.DrawImage(fraction.Images["unit"], op)
+}
+
+func (u *Unit) copyToField(field *Field) *Unit {
+	copyUnit := NewUnit(field.Pos, u.Pos, u.FactionId)
+
+	copyUnit.Action.Kind = u.Action.Kind
+	copyUnit.Action.ToPos = u.Action.ToPos
+	copyUnit.Action.Support = u.Action.Support
+	copyUnit.Action.ToFieldPos = field.Pos
+
+	copyUnit.Support = u.Support
+
+	return copyUnit
 }

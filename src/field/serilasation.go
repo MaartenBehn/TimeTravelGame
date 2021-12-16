@@ -6,36 +6,30 @@ import (
 	"github.com/Stroby241/TimeTravelGame/src/util"
 )
 
-func (f *Field) Save(name string) {
+func (t *Timeline) Save(name string) {
 
 	var buffer bytes.Buffer
 	e := gob.NewEncoder(&buffer)
-	if err := e.Encode(*f); err != nil {
+	if err := e.Encode(*t); err != nil {
 		panic(err)
 	}
 	util.SaveMapBufferToFile(name, &buffer)
 }
 
-func LoadField(name string) *Field {
+func LoadTimeline(name string) *Timeline {
 	buffer := util.LoadMapBufferFromFile(name)
 	if buffer == nil {
 		return nil
 	}
 
-	f := &Field{}
+	t := &Timeline{}
 	d := gob.NewDecoder(buffer)
-	checkErr(d.Decode(f))
+	checkErr(d.Decode(t))
 
-	f.makeReady()
+	t.makeReady()
+	t.Update()
 
-	for i, tile := range f.Tiles {
-		tile.makeReady(f)
-		f.Tiles[i] = tile
-	}
-
-	f.Update()
-
-	return f
+	return t
 }
 
 func checkErr(e error) {

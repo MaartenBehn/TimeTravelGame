@@ -41,19 +41,18 @@ type Tile struct {
 	AxialPos AxialPos
 	Pos      CardPos
 
-	field    *Field
 	vertices []ebiten.Vertex
 }
 
 func NewTile(q int, r int, field *Field) (tile Tile) {
 	tile.AxialPos = AxialPos{Q: float64(q), R: float64(r)}
-	tile.makeReady(field)
+	tile.makeReady()
 	return tile
 }
 
-func (t *Tile) makeReady(field *Field) {
-	t.field = field
+func (t *Tile) makeReady() {
 	t.Pos = t.AxialPos.MulFloat(tileSize * 2).ToCard()
+	t.Pos = t.Pos.Add(CardPos{tileSize, tileSize})
 	t.createVertices()
 }
 

@@ -15,8 +15,9 @@ var (
 )
 
 type Selector struct {
-	Pos     AxialPos
-	Visible bool
+	FieldPos CardPos
+	Pos      AxialPos
+	Visible  bool
 
 	blinkVisible bool
 	blinkTime    float64
@@ -24,8 +25,9 @@ type Selector struct {
 
 func NewSelector() *Selector {
 	return &Selector{
-		Visible: false,
-		Pos:     AxialPos{},
+		Visible:  false,
+		FieldPos: CardPos{},
+		Pos:      AxialPos{},
 	}
 }
 
@@ -41,7 +43,7 @@ func (s *Selector) Draw(img *ebiten.Image, cam *util.Camera, f *Field) {
 
 		size := selectorImgMask.Bounds().Size()
 
-		op.GeoM.Translate(tile.Pos.X-float64(size.X)/2, tile.Pos.Y-float64(size.Y)/2)
+		op.GeoM.Translate(f.Pos.X+tile.Pos.X-float64(size.X)/2, f.Pos.Y+tile.Pos.Y-float64(size.Y)/2)
 		op.GeoM.Concat(*cam.GetMatrix())
 
 		img.DrawImage(selectorImgMask, op)

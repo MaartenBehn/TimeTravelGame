@@ -7,18 +7,19 @@ import (
 )
 
 type Field struct {
-	Size  int
-	Tiles []Tile
+	Size   int
+	Bounds CardPos
+	Pos    CardPos
+	Tiles  []Tile
 
 	image *ebiten.Image
-
-	Pos CardPos
 }
 
-func NewField(size int) *Field {
+func NewField(size int, bounds CardPos) *Field {
 	field := &Field{
-		Size:  size,
-		Tiles: make([]Tile, size*size),
+		Size:   size,
+		Bounds: bounds,
+		Tiles:  make([]Tile, size*size),
 	}
 
 	for i, _ := range field.Tiles {
@@ -33,8 +34,12 @@ func NewField(size int) *Field {
 }
 
 func (f *Field) makeReady() {
-	pos := AxialPos{Q: float64(f.Size), R: float64(f.Size)}.MulFloat(tileSize * 2).ToCard()
-	f.image = ebiten.NewImage(int(pos.X), int(pos.Y))
+	for i, tile := range f.Tiles {
+		tile.makeReady()
+		f.Tiles[i] = tile
+	}
+
+	f.image = ebiten.NewImage(int(f.Bounds.X), int(f.Bounds.Y))
 }
 
 // Converts a 2D Tile index to 1D a index.
@@ -51,7 +56,9 @@ func (f *Field) GetAxial(pos AxialPos) *Tile {
 	q := int(pos.Q)
 	r := int(pos.R)
 	i := index(q, r, f.Size)
-	if i >= 100 || i < 0 || q >= f.Size || r >= f.Size {
+	if i >= 100 || i < 0 ||
+		q < 0 || r < 0 ||
+		q >= f.Size || r >= f.Size {
 		return nil
 	}
 
@@ -61,7 +68,9 @@ func (f *Field) GetAxial(pos AxialPos) *Tile {
 }
 
 func (f *Field) GetCard(pos CardPos) *Tile {
-	return f.GetAxial(pos.ToAxial().DivFloat(tileSize * 2).Round())
+	pos = pos.Sub(f.Pos.Add(CardPos{X: tileSize, Y: tileSize}))
+	axialPos := pos.ToAxial().DivFloat(tileSize * 2).Round()
+	return f.GetAxial(axialPos)
 }
 
 func (f *Field) Update() {
@@ -74,7 +83,8 @@ func (f *Field) Update() {
 
 func (f *Field) Draw(img *ebiten.Image, cam *util.Camera) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM = *cam.GetMatrix()
+	op.GeoM.Translate(f.Pos.X, f.Pos.Y)
+	op.GeoM.Concat(*cam.GetMatrix())
 
 	img.DrawImage(f.image, op)
 }
