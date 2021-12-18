@@ -15,8 +15,14 @@ type Timeline struct {
 	Fields       map[CardPos]*Field
 	ActiveFields []CardPos
 
-	U *UnitController
+	Units []*Unit
+
+	moveUnits    []*Unit
+	supportUnits []*Unit
+
 	S *Selector
+
+	image *ebiten.Image
 }
 
 func NewTimeline(fieldSize int) *Timeline {
@@ -28,9 +34,13 @@ func NewTimeline(fieldSize int) *Timeline {
 		FieldBounds:  bounds,
 		Fields:       map[CardPos]*Field{},
 		ActiveFields: []CardPos{},
-		U:            NewUnitController(),
+
+		Units: []*Unit{},
+
 		S:            NewSelector(),
 	}
+
+	timeline.makeReady()
 
 	return timeline
 }
@@ -38,6 +48,31 @@ func NewTimeline(fieldSize int) *Timeline {
 func (t *Timeline) makeReady() {
 	for _, field := range t.Fields {
 		field.makeReady()
+	}
+	t.makeReadyUnits()
+	t.createImage()
+}
+
+func (t *Timeline) createImage(){
+	size := CardPos{X: 10, Y: 10}
+	for pos := range t.Fields {
+		newSize := pos.Add(t.FieldBounds)
+		if newSize.X >= size.X{
+			size.X = newSize.X
+		}
+		if newSize.Y >= size.Y{
+			size.Y = newSize.Y
+		}
+	}
+
+	if t.image == nil {
+		t.image = ebiten.NewImage(int(size.X), int(size.Y))
+		return
+	}
+
+	w, h := t.image.Size()
+	if  w != int(size.X) || h != int(size.Y) {
+		t.image = ebiten.NewImage(int(size.X), int(size.Y))
 	}
 }
 
@@ -51,6 +86,8 @@ func (t *Timeline) AddField(pos CardPos) *Field {
 	t.Fields[pos] = f
 	t.ActiveFields = append(t.ActiveFields, pos)
 
+	t.makeReady()
+
 	return f
 }
 
@@ -59,7 +96,17 @@ func (t *Timeline) CopyField(pos CardPos, fromField *Field) *Field {
 	copiedField.Pos = pos
 	copiedField.makeReady()
 	copiedField.Update()
+
+	for _, unit := range t.Units {
+		if unit.FieldPos == fromField.Pos {
+			copyUnit := unit.copyToField(&copiedField)
+			t.Units = append(t.Units, copyUnit)
+		}
+	}
+
 	t.Fields[pos] = &copiedField
+
+	t.makeReady()
 	return &copiedField
 }
 
@@ -81,16 +128,34 @@ func (t *Timeline) Get(pos CardPos) (*Tile, *Field) {
 }
 
 func (t *Timeline) Update() {
+	t.image.Clear()
+
 	for _, field := range t.Fields {
 		field.Update()
-		t.U.draw(field.image, field)
+		field.Draw(t.image)
+
+		for _, unit := range t.Units {
+			if unit.FieldPos == field.Pos{
+				unit.draw(t.image, &Fractions[unit.FactionId], field)
+			}
+		}
+
+		for _, unit := range t.Units {
+			if unit.FieldPos == field.Pos && (unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport) {
+				tile := field.GetAxial(unit.Pos)
+
+				toField := t.Fields[unit.Action.ToFieldPos]
+				totile := toField.GetAxial(unit.Action.ToPos)
+				DrawArrow(field.Pos.Add(tile.Pos), toField.Pos.Add(totile.Pos), t.image, &Fractions[unit.FactionId])
+			}
+		}
 	}
 }
 
 func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
-	for _, field := range t.Fields {
-		field.Draw(img, cam)
-	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM = *cam.GetMatrix()
+	img.DrawImage(t.image, op)
 
 	t.S.Draw(img, cam, t.Fields[t.S.FieldPos])
 }
@@ -100,14 +165,14 @@ func (t *Timeline) SubmitRound() {
 	for i, pos := range t.ActiveFields {
 		field := t.Fields[pos]
 		newPos := pos.Add(CardPos{X: t.FieldBounds.X})
-		newField := t.CopyField(newPos, field)
-		t.U.CopyField(field, newField)
-		t.U.makeReady()
-		t.Update()
+		t.CopyField(newPos, field)
 
 		t.ActiveFields = append(t.ActiveFields, newPos)
 		t.ActiveFields = append(t.ActiveFields[:i], t.ActiveFields[i+1:]...)
 	}
+	t.makeReady()
 
-	t.U.SubmitRound(t.ActiveFields)
+	t.ApplyUnitsActions()
+
+	t.Update()
 }

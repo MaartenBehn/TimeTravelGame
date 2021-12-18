@@ -87,11 +87,11 @@ func update(e *editor) {
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.t.U.AddUnitAtTile(f, tile, &field.Fractions[1])
+			e.t.AddUnitAtTile(f, tile, &field.Fractions[1])
 		} else if e.mode == 2 {
-			e.t.U.AddUnitAtTile(f, tile, &field.Fractions[0])
+			e.t.AddUnitAtTile(f, tile, &field.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
-			_, unit := e.t.U.GetUnitAtPos(CardPos{}, tile.AxialPos)
+			_, unit := e.t.GetUnitAtPos(CardPos{}, tile.AxialPos)
 			if unit != nil {
 				e.t.S.FieldPos = f.Pos
 				e.t.S.Pos = unit.Pos
@@ -108,15 +108,15 @@ func update(e *editor) {
 
 		if e.mode == 0 {
 			tile.Visable = false
-			e.t.U.RemoveUnitAtTile(f, tile)
+			e.t.RemoveUnitAtTile(f, tile)
 
 		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
-			e.t.U.RemoveUnitAtTile(f, tile)
+			e.t.RemoveUnitAtTile(f, tile)
 		} else if e.mode == 3 && tile.Visable && e.t.S.Visible {
-			_, unit := e.t.U.GetUnitAtPos(CardPos{}, e.t.S.Pos)
+			_, unit := e.t.GetUnitAtPos(CardPos{}, e.t.S.Pos)
 
 			if unit != nil && tile.Visable {
-				e.t.U.SetAction(unit, f.Pos, tile.AxialPos)
+				e.t.SetAction(unit, f.Pos, tile.AxialPos)
 			}
 		}
 

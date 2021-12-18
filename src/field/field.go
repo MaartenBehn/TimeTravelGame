@@ -2,7 +2,6 @@ package field
 
 import (
 	. "github.com/Stroby241/TimeTravelGame/src/math"
-	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -81,10 +80,9 @@ func (f *Field) Update() {
 	}
 }
 
-func (f *Field) Draw(img *ebiten.Image, cam *util.Camera) {
+func (f *Field) Draw(img *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(f.Pos.X, f.Pos.Y)
-	op.GeoM.Concat(*cam.GetMatrix())
 
 	img.DrawImage(f.image, op)
 }

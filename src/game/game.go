@@ -77,7 +77,7 @@ func update(g *game) {
 			return
 		}
 
-		_, unit := g.t.U.GetUnitAtPos(field.Pos, tile.AxialPos)
+		_, unit := g.t.GetUnitAtPos(field.Pos, tile.AxialPos)
 		if unit != nil {
 			g.t.S.FieldPos = field.Pos
 			g.t.S.Pos = unit.Pos
@@ -91,10 +91,10 @@ func update(g *game) {
 			return
 		}
 
-		_, unit := g.t.U.GetUnitAtPos(g.t.S.FieldPos, g.t.S.Pos)
+		_, unit := g.t.GetUnitAtPos(g.t.S.FieldPos, g.t.S.Pos)
 
 		if unit != nil && tile.Visable {
-			g.t.U.SetAction(unit, field.Pos, tile.AxialPos)
+			g.t.SetAction(unit, field.Pos, tile.AxialPos)
 		}
 
 		g.t.Update()

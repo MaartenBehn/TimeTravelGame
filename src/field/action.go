@@ -24,29 +24,29 @@ func NewAction() *Action {
 	}
 }
 
-func (u *UnitController) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
+func (t *Timeline) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 
 	if unit.Action.Kind == actionMove {
-		for i := len(u.moveUnits) - 1; i >= 0; i-- {
-			if u.moveUnits[i] == unit {
-				u.moveUnits = append(u.moveUnits[:i], u.moveUnits[i+1:]...)
+		for i := len(t.moveUnits) - 1; i >= 0; i-- {
+			if t.moveUnits[i] == unit {
+				t.moveUnits = append(t.moveUnits[:i], t.moveUnits[i+1:]...)
 			}
 		}
 	} else if unit.Action.Kind == actionSupport {
 
-		if _, actionUnit := u.GetUnitAtPos(unit.Action.ToFieldPos, unit.Action.ToPos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
+		if _, actionUnit := t.GetUnitAtPos(unit.Action.ToFieldPos, unit.Action.ToPos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
 			actionUnit.Support--
 		}
 
-		for _, actionUnit := range u.moveUnits {
+		for _, actionUnit := range t.moveUnits {
 			if actionUnit.Action.ToPos == unit.Action.ToPos && actionUnit.FactionId == unit.FactionId {
 				actionUnit.Action.Support--
 			}
 		}
 
-		for i := len(u.supportUnits) - 1; i >= 0; i-- {
-			if u.supportUnits[i] == unit {
-				u.supportUnits = append(u.supportUnits[:i], u.supportUnits[i+1:]...)
+		for i := len(t.supportUnits) - 1; i >= 0; i-- {
+			if t.supportUnits[i] == unit {
+				t.supportUnits = append(t.supportUnits[:i], t.supportUnits[i+1:]...)
 			}
 		}
 	}
@@ -60,19 +60,19 @@ func (u *UnitController) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 	}
 
 	// If is to an own Unit -> Support
-	if _, actionUnit := u.GetUnitAtPos(fieldPos, pos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
+	if _, actionUnit := t.GetUnitAtPos(fieldPos, pos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
 		unit.Action.Kind = actionSupport
 		unit.Action.ToFieldPos = fieldPos
 		unit.Action.ToPos = pos
 		unit.Action.Support = 0
 
 		actionUnit.Support++
-		u.supportUnits = append(u.supportUnits, unit)
+		t.supportUnits = append(t.supportUnits, unit)
 		return
 	}
 
 	// If is to an own Move -> Support
-	for _, actionUnit := range u.moveUnits {
+	for _, actionUnit := range t.moveUnits {
 		if actionUnit.Action.ToFieldPos == fieldPos && actionUnit.Action.ToPos == pos &&
 			actionUnit.FactionId == unit.FactionId {
 
@@ -82,7 +82,7 @@ func (u *UnitController) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 			unit.Action.Support = 0
 
 			actionUnit.Action.Support++
-			u.supportUnits = append(u.supportUnits, unit)
+			t.supportUnits = append(t.supportUnits, unit)
 			return
 		}
 	}
@@ -91,7 +91,7 @@ func (u *UnitController) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 	unit.Action.Kind = actionMove
 	unit.Action.ToFieldPos = fieldPos
 	unit.Action.ToPos = pos
-	u.moveUnits = append(u.moveUnits, unit)
+	t.moveUnits = append(t.moveUnits, unit)
 }
 
 type targetPos struct {
@@ -102,14 +102,12 @@ type targetPos struct {
 	loopUnit *Unit
 }
 
-func (u *UnitController) SubmitRound(aktiveFields []CardPos) {
+func (t *Timeline) ApplyUnitsActions() {
 
 	targetPositons := []*targetPos{}
-
-	for _, unit := range u.moveUnits {
-
+	for _, unit := range t.moveUnits {
 		isAktive := false
-		for _, pos := range aktiveFields {
+		for _, pos := range t.ActiveFields {
 			if unit.FieldPos == pos {
 				isAktive = true
 			}
@@ -137,21 +135,21 @@ func (u *UnitController) SubmitRound(aktiveFields []CardPos) {
 	}
 
 	moveUnit := func(unit *Unit, fieldPos CardPos, pos AxialPos) {
-		for j := len(u.supportUnits) - 1; j >= 0; j-- {
-			if u.supportUnits[j].Action.ToFieldPos == unit.FieldPos && u.supportUnits[j].Action.ToPos == unit.Pos {
+		for j := len(t.supportUnits) - 1; j >= 0; j-- {
+			if t.supportUnits[j].Action.ToFieldPos == unit.FieldPos && t.supportUnits[j].Action.ToPos == unit.Pos {
 
-				u.SetAction(u.supportUnits[j], u.supportUnits[j].FieldPos, u.supportUnits[j].Pos)
+				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].Pos)
 
-			} else if u.supportUnits[j].Action.ToFieldPos == unit.Action.ToFieldPos && u.supportUnits[j].Action.ToPos == unit.Action.ToPos {
+			} else if t.supportUnits[j].Action.ToFieldPos == unit.Action.ToFieldPos && t.supportUnits[j].Action.ToPos == unit.Action.ToPos {
 
-				u.SetAction(u.supportUnits[j], u.supportUnits[j].FieldPos, u.supportUnits[j].Pos)
+				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].Pos)
 			}
 		}
 
 		unit.FieldPos = fieldPos
 		unit.Pos = pos
 
-		u.SetAction(unit, unit.FieldPos, unit.Pos)
+		t.SetAction(unit, unit.FieldPos, unit.Pos)
 	}
 
 	for len(targetPositons) > 0 {
@@ -167,7 +165,7 @@ func (u *UnitController) SubmitRound(aktiveFields []CardPos) {
 			var loopWinningUnit *Unit
 			loopWinningSupport := math.MaxInt32
 
-			_, presentUnit := u.GetUnitAtPos(positon.fieldPos, positon.pos)
+			_, presentUnit := t.GetUnitAtPos(positon.fieldPos, positon.pos)
 			if presentUnit != nil {
 				winningSupport = presentUnit.Support + 1
 				loopWinningSupport = presentUnit.Support
@@ -192,7 +190,7 @@ func (u *UnitController) SubmitRound(aktiveFields []CardPos) {
 
 			if winningUnit != nil {
 				if presentUnit != nil {
-					u.RemoveUnitAtPos(positon.fieldPos, positon.pos)
+					t.RemoveUnitAtPos(positon.fieldPos, positon.pos)
 				}
 
 				moveUnit(winningUnit, positon.fieldPos, positon.pos)
