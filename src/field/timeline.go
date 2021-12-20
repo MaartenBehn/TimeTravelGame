@@ -37,7 +37,7 @@ func NewTimeline(fieldSize int) *Timeline {
 
 		Units: []*Unit{},
 
-		S:            NewSelector(),
+		S: NewSelector(),
 	}
 
 	timeline.makeReady()
@@ -53,14 +53,14 @@ func (t *Timeline) makeReady() {
 	t.createImage()
 }
 
-func (t *Timeline) createImage(){
+func (t *Timeline) createImage() {
 	size := CardPos{X: 10, Y: 10}
 	for pos := range t.Fields {
 		newSize := pos.Add(t.FieldBounds)
-		if newSize.X >= size.X{
+		if newSize.X >= size.X {
 			size.X = newSize.X
 		}
-		if newSize.Y >= size.Y{
+		if newSize.Y >= size.Y {
 			size.Y = newSize.Y
 		}
 	}
@@ -71,7 +71,7 @@ func (t *Timeline) createImage(){
 	}
 
 	w, h := t.image.Size()
-	if  w != int(size.X) || h != int(size.Y) {
+	if w != int(size.X) || h != int(size.Y) {
 		t.image = ebiten.NewImage(int(size.X), int(size.Y))
 	}
 }
@@ -100,6 +100,11 @@ func (t *Timeline) CopyField(pos CardPos, fromField *Field) *Field {
 	for _, unit := range t.Units {
 		if unit.FieldPos == fromField.Pos {
 			copyUnit := unit.copyToField(&copiedField)
+
+			if unit.Action.ToFieldPos != fromField.Pos {
+				copyUnit.Action.ToFieldPos = unit.Action.ToFieldPos
+			}
+
 			t.Units = append(t.Units, copyUnit)
 		}
 	}
@@ -135,7 +140,7 @@ func (t *Timeline) Update() {
 		field.Draw(t.image)
 
 		for _, unit := range t.Units {
-			if unit.FieldPos == field.Pos{
+			if unit.FieldPos == field.Pos {
 				unit.draw(t.image, &Fractions[unit.FactionId], field)
 			}
 		}
