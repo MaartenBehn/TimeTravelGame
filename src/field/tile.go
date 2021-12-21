@@ -1,7 +1,6 @@
 package field
 
 import (
-	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"math"
@@ -43,33 +42,34 @@ type Tile struct {
 	vertices []ebiten.Vertex
 }
 
-func NewTile(q int, r int) (tile Tile) {
-	tile.TilePos = AxialPos{Q: float64(q), R: float64(r)}
+func NewTile(pos TimePos) (tile Tile) {
+	tile.TimePos = pos
 	tile.makeReady()
 	return tile
 }
 
 func (t *Tile) makeReady() {
-	t.CalcPos()
-	t.createVertices()
-}
-
-func (t *Tile) createVertices() {
 	t.vertices = make([]ebiten.Vertex, len(tileVertices))
 	for j, vertex := range tileVertices {
-		vertex.DstX += float32(t.CalcPos().X)
-		vertex.DstY += float32(t.CalcPos().Y)
+		vertex.DstX += float32(t.CalcTilePos().X)
+		vertex.DstY += float32(t.CalcTilePos().Y)
 
 		vertex.ColorA = 1
 		t.vertices[j] = vertex
 	}
-	t.vertices[0].ColorA -= 0.5
+	t.vertices[0].ColorA = 0.5
 }
 
 // draw draws the hexagon for the Tile
-func (t Tile) draw(img *ebiten.Image) {
+func (t Tile) draw(img *ebiten.Image, active bool) {
 	if !t.Visable {
 		return
+	}
+
+	if active {
+		t.vertices[0].ColorR = 0.5
+	} else {
+		t.vertices[0].ColorR = 1
 	}
 
 	op := &ebiten.DrawTrianglesOptions{}

@@ -91,8 +91,9 @@ func update(g *game) {
 		}
 
 		_, unit := g.t.GetUnitAtPos(g.t.S.TimePos)
+		field := g.t.Fields[unit.FieldPos]
 
-		if unit != nil && tile.Visable {
+		if unit != nil && tile.Visable && field.Active {
 			g.t.SetAction(unit, tile.TimePos)
 		}
 

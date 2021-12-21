@@ -10,20 +10,25 @@ type Field struct {
 	Bounds CardPos
 	Pos    CardPos
 	Tiles  []Tile
+	Active bool
 
 	image *ebiten.Image
 }
 
-func NewField(size int, bounds CardPos) *Field {
+func NewField(size int, bounds CardPos, pos CardPos) *Field {
 	field := &Field{
 		Size:   size,
 		Bounds: bounds,
+		Pos:    pos,
 		Tiles:  make([]Tile, size*size),
 	}
 
 	for i, _ := range field.Tiles {
 		q, r := reverseIndex(i, size)
-		field.Tiles[i] = NewTile(q, r)
+		field.Tiles[i] = NewTile(TimePos{
+			TilePos:  AxialPos{Q: float64(q), R: float64(r)},
+			FieldPos: pos,
+		})
 	}
 
 	field.makeReady()
@@ -76,7 +81,7 @@ func (f *Field) Update() {
 	f.image.Clear()
 
 	for _, tile := range f.Tiles {
-		tile.draw(f.image)
+		tile.draw(f.image, f.Active)
 	}
 }
 

@@ -32,7 +32,7 @@ func NewSelector() *Selector {
 	}
 }
 
-func (s *Selector) Draw(img *ebiten.Image, cam *util.Camera, f *Field) {
+func (s *Selector) Draw(img *ebiten.Image, cam *util.Camera) {
 	if time.Since(selectorTime).Seconds() >= selectorBlinkIntervall {
 		selectorVisable = !selectorVisable
 		selectorTime = time.Now()
@@ -40,11 +40,10 @@ func (s *Selector) Draw(img *ebiten.Image, cam *util.Camera, f *Field) {
 
 	if selectorVisable {
 		op := &ebiten.DrawImageOptions{}
-		tile := f.GetAxial(s.TilePos)
 
 		size := selectorImgMask.Bounds().Size()
 
-		op.GeoM.Translate(f.Pos.X+tile.CalcPos().X-float64(size.X)/2, f.Pos.Y+tile.CalcPos().Y-float64(size.Y)/2)
+		op.GeoM.Translate(s.CalcPos().X-float64(size.X)/2, s.CalcPos().Y-float64(size.Y)/2)
 		op.GeoM.Concat(*cam.GetMatrix())
 
 		img.DrawImage(selectorImgMask, op)

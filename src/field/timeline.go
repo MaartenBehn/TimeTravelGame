@@ -54,7 +54,7 @@ func (t *Timeline) makeReady() {
 }
 
 func (t *Timeline) createImage() {
-	size := CardPos{X: 10, Y: 10}
+	size := CardPos{X: 1000, Y: 1000}
 	for pos := range t.Fields {
 		newSize := pos.Add(t.FieldBounds)
 		if newSize.X >= size.X {
@@ -81,9 +81,10 @@ func (t *Timeline) AddField(pos CardPos) *Field {
 		return t.Fields[pos]
 	}
 
-	f := NewField(t.FieldSize, t.FieldBounds)
-	f.Pos = pos
+	f := NewField(t.FieldSize, t.FieldBounds, pos)
 	t.Fields[pos] = f
+
+	f.Active = true
 	t.ActiveFields = append(t.ActiveFields, pos)
 
 	t.makeReady()
@@ -92,8 +93,16 @@ func (t *Timeline) AddField(pos CardPos) *Field {
 }
 
 func (t *Timeline) CopyField(toPos CardPos, fromField *Field) *Field {
-	copiedField := *fromField
+	field := *fromField
+	copiedField := field
 	copiedField.Pos = toPos
+
+	copiedField.Tiles = make([]Tile, len(field.Tiles))
+	for i, tile := range field.Tiles {
+		tile.FieldPos = toPos
+		copiedField.Tiles[i] = tile
+	}
+
 	copiedField.makeReady()
 	copiedField.Update()
 
@@ -122,26 +131,21 @@ func (t *Timeline) Get(pos CardPos) (*Tile, *Field) {
 func (t *Timeline) Update() {
 	t.image.Clear()
 
+	// Draw Field
 	for _, field := range t.Fields {
 		field.Update()
 		field.Draw(t.image)
-
-		for _, unit := range t.Units {
-			if unit.FieldPos == field.Pos {
-				unit.draw(t.image, &Fractions[unit.FactionId])
-			}
-		}
 	}
 
-	for _, field := range t.Fields {
-		for _, unit := range t.Units {
-			if unit.FieldPos == field.Pos && (unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport) {
-				tile := field.GetAxial(unit.TilePos)
+	// Draw Units
+	for _, unit := range t.Units {
+		unit.draw(t.image, &Fractions[unit.FactionId])
+	}
 
-				toField := t.Fields[unit.Action.FieldPos]
-				totile := toField.GetAxial(unit.Action.TilePos)
-				DrawArrow(field.Pos.Add(tile.CalcPos()), toField.Pos.Add(totile.CalcPos()), t.image, &Fractions[unit.FactionId])
-			}
+	// Draw Arrows
+	for _, unit := range t.Units {
+		if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
+			DrawArrow(unit.CalcPos(), unit.Action.CalcPos(), t.image, &Fractions[unit.FactionId])
 		}
 	}
 }
@@ -151,26 +155,5 @@ func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
 	op.GeoM = *cam.GetMatrix()
 	img.DrawImage(t.image, op)
 
-	t.S.Draw(img, cam, t.Fields[t.S.FieldPos])
-}
-
-func (t *Timeline) SubmitRound() {
-
-	/*
-		for i, pos := range t.ActiveFields {
-			field := t.Fields[pos]
-			newPos := pos.Add(CardPos{X: t.FieldBounds.X})
-			t.CopyField(newPos, field)
-
-			t.ActiveFields = append(t.ActiveFields, newPos)
-			t.ActiveFields = append(t.ActiveFields[:i], t.ActiveFields[i+1:]...)
-		}
-	*/
-
-	t.makeReady()
-
-	t.SubmitRoundUnits()
-
-	t.Update()
-
+	t.S.Draw(img, cam)
 }

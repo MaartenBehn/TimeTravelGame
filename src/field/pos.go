@@ -12,5 +12,9 @@ func (p TimePos) SamePos(p2 TimePos) bool {
 }
 
 func (p TimePos) CalcPos() CardPos {
-	return p.TilePos.MulFloat(tileSize * 2).ToCard().AddFloat(tileSize).Add(p.FieldPos)
+	return p.CalcTilePos().Add(p.FieldPos)
+}
+
+func (p TimePos) CalcTilePos() CardPos {
+	return p.TilePos.MulFloat(tileSize * 2).ToCard().AddFloat(tileSize)
 }

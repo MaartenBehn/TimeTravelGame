@@ -1,7 +1,6 @@
 package field
 
 import (
-	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/colornames"
 	"image/color"
@@ -33,6 +32,31 @@ func getFractionIndex(f *Fraction) int {
 		}
 	}
 	return -1
+}
+
+type Unit struct {
+	TimePos
+	FactionId int
+	Action    Action
+	Support   int
+}
+
+func NewUnit(pos TimePos, factionId int) *Unit {
+	return &Unit{
+		FactionId: factionId,
+		TimePos:   pos,
+		Action:    NewAction(),
+	}
+}
+
+func (u *Unit) draw(img *ebiten.Image, fraction *Fraction) {
+
+	w, h := fraction.Images["unit"].Size()
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM = ebiten.GeoM{}
+	op.GeoM.Translate(u.CalcPos().X-float64(w)/2, u.CalcPos().Y-float64(h)/2)
+	img.DrawImage(fraction.Images["unit"], op)
 }
 
 func (t *Timeline) makeReadyUnits() {
@@ -81,34 +105,9 @@ func (t *Timeline) RemoveUnitAtPos(pos TimePos) {
 	}
 }
 
-type Unit struct {
-	TimePos
-	FactionId int
-	Action    *Action
-	Support   int
-}
-
-func NewUnit(pos TimePos, factionId int) *Unit {
-	return &Unit{
-		FactionId: factionId,
-		TimePos:   pos,
-		Action:    NewAction(),
-	}
-}
-
-func (u *Unit) draw(img *ebiten.Image, fraction *Fraction) {
-
-	w, h := fraction.Images["unit"].Size()
-
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM = ebiten.GeoM{}
-	op.GeoM.Translate(u.CalcPos().X-float64(w)/2, u.CalcPos().Y-float64(h)/2)
-	img.DrawImage(fraction.Images["unit"], op)
-}
-
-func (u *Unit) copyToField(fieldPos CardPos) *Unit {
-	fromUnit := *u
+func (t *Timeline) CopyUnit(unit *Unit) *Unit {
+	fromUnit := *unit
 	copyUnit := fromUnit
-	copyUnit.FieldPos = fieldPos
+	t.Units = append(t.Units, &copyUnit)
 	return &copyUnit
 }

@@ -1,7 +1,6 @@
 package field
 
 import (
-	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 )
 
@@ -17,8 +16,8 @@ type Action struct {
 	Support int // For Move Action
 }
 
-func NewAction() *Action {
-	return &Action{
+func NewAction() Action {
+	return Action{
 		Kind: actionStay,
 	}
 }
@@ -71,7 +70,7 @@ func (t *Timeline) SetAction(unit *Unit, pos TimePos) {
 
 	// If is to an own Move -> Support
 	for _, actionUnit := range t.moveUnits {
-		if actionUnit.Action.SamePos(actionUnit.Action.TimePos); actionUnit.FactionId == unit.FactionId {
+		if actionUnit.Action.SamePos(pos) && actionUnit.FactionId == unit.FactionId {
 
 			unit.Action.Kind = actionSupport
 			unit.Action.TimePos = pos
@@ -96,7 +95,10 @@ type targetPos struct {
 	winningUnit *Unit
 }
 
-func (t *Timeline) SubmitRoundUnits() {
+var fieldY float64
+
+func (t *Timeline) SubmitRound() {
+	t.makeReady()
 
 	var targetPositions []*targetPos
 	for _, unit := range t.moveUnits {
@@ -137,8 +139,8 @@ func (t *Timeline) SubmitRoundUnits() {
 		}
 	}
 
+	// Find Winning Units for target Positions
 	changeHappend := true
-
 	for changeHappend {
 		changeHappend = false
 		for _, position := range targetPositions {
@@ -166,170 +168,118 @@ func (t *Timeline) SubmitRoundUnits() {
 		}
 	}
 
+	var newFieldPositions []CardPos
+	var fieldPositions []CardPos
+
+	// Copy winning Units
 	for _, position := range targetPositions {
-		if position.winningUnit != nil {
-			position.winningUnit.copyToField()
-		}
-	}
-	fmt.Println("DEbug")
-}
-
-/*
-type targetPos struct {
-	oldFieldPos CardPos
-	fieldPos    CardPos
-	pos         AxialPos
-	moveUnits   []*Unit
-
-	loopUnit *Unit
-}
-
-func (t *Timeline) ApplyUnitsActions() {
-
-	var timeTravelPositions []*targetPos
-	moveUnit := func(unit *Unit, position *targetPos) {
-		for j := len(t.supportUnits) - 1; j >= 0; j-- {
-			if t.supportUnits[j].Action.ToFieldPos == unit.FieldPos && t.supportUnits[j].Action.ToPos == unit.TilePos {
-
-				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].TilePos)
-
-			} else if t.supportUnits[j].Action.ToFieldPos == unit.Action.ToFieldPos && t.supportUnits[j].Action.ToPos == unit.Action.ToPos {
-
-				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].TilePos)
-			}
-		}
-
-		unit.FieldPos = position.fieldPos
-		unit.TilePos = position.pos
-
-		t.SetAction(unit, unit.FieldPos, unit.TilePos)
-
-		if position.oldFieldPos != position.fieldPos {
-			timeTravelPositions = append(timeTravelPositions, position)
-		}
-	}
-
-	for _, positon := range targetPositons {
-		notAktive := true
-		for _, pos := range t.ActiveFields {
-			if pos == positon.oldFieldPos {
-				notAktive = false
-			}
-		}
-		if notAktive {
-			positon.fieldPos = positon.oldFieldPos.Add(CardPos{Y: t.FieldBounds.Y})
-		}
-	}
-
-	for len(targetPositons) > 0 {
-
-		madeMove := false
-
-		for i, positon := range targetPositons {
-			positon.loopUnit = nil
-
-			var winningUnit *Unit
-			winningSupport := 0
-
-			var loopWinningUnit *Unit
-			loopWinningSupport := math.MaxInt32
-
-			_, presentUnit := t.GetUnitAtPos(positon.oldFieldPos, positon.pos)
-			if presentUnit != nil {
-				winningSupport = presentUnit.Support + 1
-				loopWinningSupport = presentUnit.Support
-			}
-
-			for _, unit := range positon.moveUnits {
-
-				if (unit.Action.Support + 1) > winningSupport {
-					winningUnit = unit
-					winningSupport = unit.Action.Support + 1
-				} else if (unit.Action.Support + 1) == winningSupport {
-					winningUnit = nil
-				}
-
-				if (unit.Action.Support + 1) > loopWinningSupport {
-					loopWinningUnit = unit
-					loopWinningSupport = unit.Action.Support + 1
-				} else if (unit.Action.Support + 1) == loopWinningSupport {
-					loopWinningUnit = nil
-				}
-			}
-
-			if winningUnit != nil {
-				if presentUnit != nil {
-					t.RemoveUnitAtPos(positon.fieldPos, positon.pos)
-				}
-
-				moveUnit(winningUnit, positon)
-
-				targetPositons = append(targetPositons[:i], targetPositons[i+1:]...)
-
-				madeMove = true
-				break
-
-			} else if loopWinningUnit != nil && presentUnit != nil {
-				positon.loopUnit = loopWinningUnit
-			}
-		}
-
-		for _, positon := range targetPositons {
-			if positon.loopUnit != nil {
-
-				loop := []*targetPos{positon}
-
-				findingPos := true
-				loopDone := false
-				for findingPos {
-					findingPos = false
-
-					for _, testPosition := range targetPositons {
-						if positon.loopUnit != nil && testPosition != positon &&
-							loop[len(loop)-1].loopUnit.TilePos == testPosition.pos {
-
-							loop = append(loop, testPosition)
-							findingPos = true
-
-							if testPosition.loopUnit.TilePos == loop[0].pos {
-								loopDone = true
-							}
-
-							break
-						}
-					}
-				}
-
-				if loopDone {
-					for _, pos := range loop {
-						moveUnit(pos.loopUnit, pos)
-
-						for i, targetPositon := range targetPositons {
-							if targetPositon == pos {
-								targetPositons = append(targetPositons[:i], targetPositons[i+1:]...)
-								break
-							}
-						}
-					}
-					madeMove = true
-					break
-				}
-			}
-		}
-
-		if !madeMove {
-			break
-		}
-	}
-
-	for _, pos := range timeTravelPositions {
-		if t.Fields[pos.fieldPos] != nil {
+		if position.winningUnit == nil {
 			continue
 		}
 
-		field := t.Fields[pos.oldFieldPos]
-		t.CopyField(pos.fieldPos, field)
-		t.ActiveFields = append(t.ActiveFields, pos.fieldPos)
+		copyUnit := t.CopyUnit(position.winningUnit)
+
+		isAktive := false
+		for _, pos := range t.ActiveFields {
+			if pos == position.FieldPos {
+				isAktive = true
+			}
+		}
+		if isAktive {
+
+			copyUnit.FieldPos = position.FieldPos.Add(CardPos{X: t.FieldBounds.X})
+
+		} else {
+			var newFieldPos CardPos
+			contained := false
+			for i, pos := range fieldPositions {
+				if pos == position.FieldPos {
+					contained = true
+					newFieldPos = newFieldPositions[i]
+					break
+				}
+			}
+
+			if !contained {
+				fieldPositions = append(fieldPositions, position.FieldPos)
+
+				fieldY += t.FieldBounds.Y
+				newFieldPos = CardPos{X: position.FieldPos.X, Y: fieldY}
+				newFieldPositions = append(newFieldPositions, newFieldPos)
+			}
+
+			copyUnit.FieldPos = newFieldPos
+		}
+
+		copyUnit.TilePos = position.TilePos
+		copyUnit.Action = NewAction()
 	}
+
+	// Copy all not moved Units
+	for _, unit := range t.Units {
+		isAktive := false
+		for _, pos := range t.ActiveFields {
+			if unit.FieldPos == pos {
+				isAktive = true
+				break
+			}
+		}
+
+		isWinning := false
+		for _, position := range targetPositions {
+			if unit == position.winningUnit {
+				isWinning = true
+				break
+			}
+		}
+
+		newField := -1
+		for i, pos := range fieldPositions {
+			if pos == unit.FieldPos {
+				newField = i
+				break
+			}
+		}
+
+		if isAktive && !isWinning {
+			copyUnit := t.CopyUnit(unit)
+			copyUnit.FieldPos = unit.FieldPos.Add(CardPos{X: t.FieldBounds.X})
+			if copyUnit.Action.FieldPos == unit.FieldPos {
+				copyUnit.Action.FieldPos = copyUnit.FieldPos
+			}
+		}
+
+		if newField != -1 && !isAktive && !isWinning {
+			copyUnit := t.CopyUnit(unit)
+			copyUnit.FieldPos = newFieldPositions[newField]
+			if copyUnit.Action.FieldPos == unit.FieldPos {
+				copyUnit.Action.FieldPos = copyUnit.FieldPos
+			}
+		}
+	}
+
+	// Copy Aktive Fields
+	for i := len(t.ActiveFields) - 1; i >= 0; i-- {
+		field := t.Fields[t.ActiveFields[i]]
+		newPos := t.ActiveFields[i].Add(CardPos{X: t.FieldBounds.X})
+		copyField := t.CopyField(newPos, field)
+
+		t.ActiveFields = append(t.ActiveFields, newPos)
+		copyField.Active = true
+
+		t.ActiveFields = append(t.ActiveFields[:i], t.ActiveFields[i+1:]...)
+		field.Active = false
+	}
+
+	// Copy new Fields
+	for i, pos := range fieldPositions {
+		field := t.Fields[pos]
+		newPos := newFieldPositions[i]
+		copyField := t.CopyField(newPos, field)
+
+		copyField.Active = true
+		t.ActiveFields = append(t.ActiveFields, newPos)
+	}
+
+	t.Update()
 }
-*/
