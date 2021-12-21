@@ -23,7 +23,7 @@ func NewField(size int, bounds CardPos) *Field {
 
 	for i, _ := range field.Tiles {
 		q, r := reverseIndex(i, size)
-		field.Tiles[i] = NewTile(q, r, field)
+		field.Tiles[i] = NewTile(q, r)
 	}
 
 	field.makeReady()

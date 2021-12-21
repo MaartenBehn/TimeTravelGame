@@ -72,29 +72,28 @@ func update(g *game) {
 	}
 
 	if g.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		tile, field := getTile()
+		tile, _ := getTile()
 		if tile == nil {
 			return
 		}
 
-		_, unit := g.t.GetUnitAtPos(field.Pos, tile.AxialPos)
+		_, unit := g.t.GetUnitAtPos(tile.TimePos)
 		if unit != nil {
-			g.t.S.FieldPos = field.Pos
-			g.t.S.Pos = unit.Pos
+			g.t.S.TimePos = unit.TimePos
 			g.t.S.Visible = true
 		}
 
 		g.t.Update()
 	} else if g.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		tile, field := getTile()
+		tile, _ := getTile()
 		if tile == nil {
 			return
 		}
 
-		_, unit := g.t.GetUnitAtPos(g.t.S.FieldPos, g.t.S.Pos)
+		_, unit := g.t.GetUnitAtPos(g.t.S.TimePos)
 
 		if unit != nil && tile.Visable {
-			g.t.SetAction(unit, field.Pos, tile.AxialPos)
+			g.t.SetAction(unit, tile.TimePos)
 		}
 
 		g.t.Update()

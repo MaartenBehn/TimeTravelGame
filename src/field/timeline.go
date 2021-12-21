@@ -91,27 +91,14 @@ func (t *Timeline) AddField(pos CardPos) *Field {
 	return f
 }
 
-func (t *Timeline) CopyField(pos CardPos, fromField *Field) *Field {
+func (t *Timeline) CopyField(toPos CardPos, fromField *Field) *Field {
 	copiedField := *fromField
-	copiedField.Pos = pos
+	copiedField.Pos = toPos
 	copiedField.makeReady()
 	copiedField.Update()
 
-	for _, unit := range t.Units {
-		if unit.FieldPos == fromField.Pos {
-			copyUnit := unit.copyToField(&copiedField)
+	t.Fields[toPos] = &copiedField
 
-			if unit.Action.ToFieldPos != fromField.Pos {
-				copyUnit.Action.ToFieldPos = unit.Action.ToFieldPos
-			}
-
-			t.Units = append(t.Units, copyUnit)
-		}
-	}
-
-	t.Fields[pos] = &copiedField
-
-	t.makeReady()
 	return &copiedField
 }
 
@@ -141,17 +128,19 @@ func (t *Timeline) Update() {
 
 		for _, unit := range t.Units {
 			if unit.FieldPos == field.Pos {
-				unit.draw(t.image, &Fractions[unit.FactionId], field)
+				unit.draw(t.image, &Fractions[unit.FactionId])
 			}
 		}
+	}
 
+	for _, field := range t.Fields {
 		for _, unit := range t.Units {
 			if unit.FieldPos == field.Pos && (unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport) {
-				tile := field.GetAxial(unit.Pos)
+				tile := field.GetAxial(unit.TilePos)
 
-				toField := t.Fields[unit.Action.ToFieldPos]
-				totile := toField.GetAxial(unit.Action.ToPos)
-				DrawArrow(field.Pos.Add(tile.Pos), toField.Pos.Add(totile.Pos), t.image, &Fractions[unit.FactionId])
+				toField := t.Fields[unit.Action.FieldPos]
+				totile := toField.GetAxial(unit.Action.TilePos)
+				DrawArrow(field.Pos.Add(tile.CalcPos()), toField.Pos.Add(totile.CalcPos()), t.image, &Fractions[unit.FactionId])
 			}
 		}
 	}
@@ -167,17 +156,21 @@ func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
 
 func (t *Timeline) SubmitRound() {
 
-	for i, pos := range t.ActiveFields {
-		field := t.Fields[pos]
-		newPos := pos.Add(CardPos{X: t.FieldBounds.X})
-		t.CopyField(newPos, field)
+	/*
+		for i, pos := range t.ActiveFields {
+			field := t.Fields[pos]
+			newPos := pos.Add(CardPos{X: t.FieldBounds.X})
+			t.CopyField(newPos, field)
 
-		t.ActiveFields = append(t.ActiveFields, newPos)
-		t.ActiveFields = append(t.ActiveFields[:i], t.ActiveFields[i+1:]...)
-	}
+			t.ActiveFields = append(t.ActiveFields, newPos)
+			t.ActiveFields = append(t.ActiveFields[:i], t.ActiveFields[i+1:]...)
+		}
+	*/
+
 	t.makeReady()
 
-	t.ApplyUnitsActions()
+	t.SubmitRoundUnits()
 
 	t.Update()
+
 }

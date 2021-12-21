@@ -38,29 +38,27 @@ type TileSettings struct {
 
 type Tile struct {
 	TileSettings
-	AxialPos AxialPos
-	Pos      CardPos
+	TimePos
 
 	vertices []ebiten.Vertex
 }
 
-func NewTile(q int, r int, field *Field) (tile Tile) {
-	tile.AxialPos = AxialPos{Q: float64(q), R: float64(r)}
+func NewTile(q int, r int) (tile Tile) {
+	tile.TilePos = AxialPos{Q: float64(q), R: float64(r)}
 	tile.makeReady()
 	return tile
 }
 
 func (t *Tile) makeReady() {
-	t.Pos = t.AxialPos.MulFloat(tileSize * 2).ToCard()
-	t.Pos = t.Pos.Add(CardPos{tileSize, tileSize})
+	t.CalcPos()
 	t.createVertices()
 }
 
 func (t *Tile) createVertices() {
 	t.vertices = make([]ebiten.Vertex, len(tileVertices))
 	for j, vertex := range tileVertices {
-		vertex.DstX += float32(t.Pos.X)
-		vertex.DstY += float32(t.Pos.Y)
+		vertex.DstX += float32(t.CalcPos().X)
+		vertex.DstY += float32(t.CalcPos().Y)
 
 		vertex.ColorA = 1
 		t.vertices[j] = vertex

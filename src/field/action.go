@@ -1,8 +1,8 @@
 package field
 
 import (
+	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
-	"math"
 )
 
 const (
@@ -12,10 +12,9 @@ const (
 )
 
 type Action struct {
-	Kind       int
-	ToFieldPos CardPos
-	ToPos      AxialPos
-	Support    int // For Move Action
+	TimePos
+	Kind    int
+	Support int // For Move Action
 }
 
 func NewAction() *Action {
@@ -24,7 +23,7 @@ func NewAction() *Action {
 	}
 }
 
-func (t *Timeline) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
+func (t *Timeline) SetAction(unit *Unit, pos TimePos) {
 
 	if unit.Action.Kind == actionMove {
 		for i := len(t.moveUnits) - 1; i >= 0; i-- {
@@ -34,12 +33,12 @@ func (t *Timeline) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 		}
 	} else if unit.Action.Kind == actionSupport {
 
-		if _, actionUnit := t.GetUnitAtPos(unit.Action.ToFieldPos, unit.Action.ToPos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
+		if _, actionUnit := t.GetUnitAtPos(unit.Action.TimePos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
 			actionUnit.Support--
 		}
 
 		for _, actionUnit := range t.moveUnits {
-			if actionUnit.Action.ToPos == unit.Action.ToPos && actionUnit.FactionId == unit.FactionId {
+			if actionUnit.Action.TilePos == unit.Action.TilePos && actionUnit.FactionId == unit.FactionId {
 				actionUnit.Action.Support--
 			}
 		}
@@ -51,19 +50,18 @@ func (t *Timeline) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 		}
 	}
 
-	// If pos is the same -> Stay
-	if unit.FieldPos == fieldPos && unit.Pos == pos {
+	// If TimePos is the same -> Stay
+	if unit.SamePos(pos) {
 		unit.Action.Kind = actionStay
-		unit.Action.ToFieldPos = CardPos{}
-		unit.Action.ToPos = AxialPos{}
+		unit.Action.FieldPos = CardPos{}
+		unit.Action.TilePos = AxialPos{}
 		return
 	}
 
 	// If is to an own Unit -> Support
-	if _, actionUnit := t.GetUnitAtPos(fieldPos, pos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
+	if _, actionUnit := t.GetUnitAtPos(pos); actionUnit != nil && actionUnit.FactionId == unit.FactionId {
 		unit.Action.Kind = actionSupport
-		unit.Action.ToFieldPos = fieldPos
-		unit.Action.ToPos = pos
+		unit.Action.TimePos = pos
 		unit.Action.Support = 0
 
 		actionUnit.Support++
@@ -73,12 +71,10 @@ func (t *Timeline) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 
 	// If is to an own Move -> Support
 	for _, actionUnit := range t.moveUnits {
-		if actionUnit.Action.ToFieldPos == fieldPos && actionUnit.Action.ToPos == pos &&
-			actionUnit.FactionId == unit.FactionId {
+		if actionUnit.Action.SamePos(actionUnit.Action.TimePos); actionUnit.FactionId == unit.FactionId {
 
 			unit.Action.Kind = actionSupport
-			unit.Action.ToFieldPos = fieldPos
-			unit.Action.ToPos = pos
+			unit.Action.TimePos = pos
 			unit.Action.Support = 0
 
 			actionUnit.Action.Support++
@@ -89,11 +85,96 @@ func (t *Timeline) SetAction(unit *Unit, fieldPos CardPos, pos AxialPos) {
 
 	// Else -> Move
 	unit.Action.Kind = actionMove
-	unit.Action.ToFieldPos = fieldPos
-	unit.Action.ToPos = pos
+	unit.Action.TimePos = pos
 	t.moveUnits = append(t.moveUnits, unit)
 }
 
+type targetPos struct {
+	TimePos
+	moveUnits   []*Unit
+	presentUnit *Unit
+	winningUnit *Unit
+}
+
+func (t *Timeline) SubmitRoundUnits() {
+
+	var targetPositions []*targetPos
+	for _, unit := range t.moveUnits {
+
+		// Find all aktive Units
+		isAktive := false
+		for _, pos := range t.ActiveFields {
+			if unit.FieldPos == pos {
+				isAktive = true
+			}
+		}
+		if !isAktive {
+			continue
+		}
+
+		// Check if there is already a target Position
+		found := false
+		for i, positon := range targetPositions {
+			if positon.SamePos(unit.Action.TimePos) {
+				targetPositions[i].moveUnits = append(targetPositions[i].moveUnits, unit)
+				found = true
+			}
+		}
+
+		// If not add target Position
+		if !found {
+			position := &targetPos{
+				TimePos:   unit.Action.TimePos,
+				moveUnits: []*Unit{unit},
+			}
+
+			_, position.presentUnit = t.GetUnitAtPos(position.TimePos)
+			if position.presentUnit != nil {
+				position.moveUnits = append(position.moveUnits, position.presentUnit)
+			}
+
+			targetPositions = append(targetPositions, position)
+		}
+	}
+
+	changeHappend := true
+
+	for changeHappend {
+		changeHappend = false
+		for _, position := range targetPositions {
+
+			oldWinningUnit := position.winningUnit
+			winningAmount := 0
+			for _, unit := range position.moveUnits {
+
+				amount := unit.Action.Support + 1
+				if amount > winningAmount {
+					position.winningUnit = unit
+					winningAmount = amount
+				} else if amount == winningAmount {
+					position.winningUnit = nil
+				}
+			}
+
+			if position.presentUnit != nil && position.winningUnit == nil {
+				position.winningUnit = position.presentUnit
+			}
+
+			if position.winningUnit != oldWinningUnit {
+				changeHappend = true
+			}
+		}
+	}
+
+	for _, position := range targetPositions {
+		if position.winningUnit != nil {
+			position.winningUnit.copyToField()
+		}
+	}
+	fmt.Println("DEbug")
+}
+
+/*
 type targetPos struct {
 	oldFieldPos CardPos
 	fieldPos    CardPos
@@ -105,54 +186,23 @@ type targetPos struct {
 
 func (t *Timeline) ApplyUnitsActions() {
 
-	targetPositons := []*targetPos{}
-	for _, unit := range t.moveUnits {
-		isAktive := false
-		for _, pos := range t.ActiveFields {
-			if unit.FieldPos == pos {
-				isAktive = true
-			}
-		}
-		if !isAktive {
-			continue
-		}
-
-		found := false
-		for i, positon := range targetPositons {
-			if positon.fieldPos == unit.Action.ToFieldPos && positon.pos == unit.Action.ToPos {
-				targetPositons[i].moveUnits = append(targetPositons[i].moveUnits, unit)
-				found = true
-			}
-		}
-
-		if !found {
-			position := &targetPos{
-				oldFieldPos: unit.Action.ToFieldPos,
-				fieldPos:    unit.Action.ToFieldPos,
-				pos:         unit.Action.ToPos,
-				moveUnits:   []*Unit{unit},
-			}
-			targetPositons = append(targetPositons, position)
-		}
-	}
-
 	var timeTravelPositions []*targetPos
 	moveUnit := func(unit *Unit, position *targetPos) {
 		for j := len(t.supportUnits) - 1; j >= 0; j-- {
-			if t.supportUnits[j].Action.ToFieldPos == unit.FieldPos && t.supportUnits[j].Action.ToPos == unit.Pos {
+			if t.supportUnits[j].Action.ToFieldPos == unit.FieldPos && t.supportUnits[j].Action.ToPos == unit.TilePos {
 
-				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].Pos)
+				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].TilePos)
 
 			} else if t.supportUnits[j].Action.ToFieldPos == unit.Action.ToFieldPos && t.supportUnits[j].Action.ToPos == unit.Action.ToPos {
 
-				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].Pos)
+				t.SetAction(t.supportUnits[j], t.supportUnits[j].FieldPos, t.supportUnits[j].TilePos)
 			}
 		}
 
 		unit.FieldPos = position.fieldPos
-		unit.Pos = position.pos
+		unit.TilePos = position.pos
 
-		t.SetAction(unit, unit.FieldPos, unit.Pos)
+		t.SetAction(unit, unit.FieldPos, unit.TilePos)
 
 		if position.oldFieldPos != position.fieldPos {
 			timeTravelPositions = append(timeTravelPositions, position)
@@ -236,12 +286,12 @@ func (t *Timeline) ApplyUnitsActions() {
 
 					for _, testPosition := range targetPositons {
 						if positon.loopUnit != nil && testPosition != positon &&
-							loop[len(loop)-1].loopUnit.Pos == testPosition.pos {
+							loop[len(loop)-1].loopUnit.TilePos == testPosition.pos {
 
 							loop = append(loop, testPosition)
 							findingPos = true
 
-							if testPosition.loopUnit.Pos == loop[0].pos {
+							if testPosition.loopUnit.TilePos == loop[0].pos {
 								loopDone = true
 							}
 
@@ -282,3 +332,4 @@ func (t *Timeline) ApplyUnitsActions() {
 		t.ActiveFields = append(t.ActiveFields, pos.fieldPos)
 	}
 }
+*/

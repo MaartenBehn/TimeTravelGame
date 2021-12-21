@@ -15,9 +15,8 @@ var (
 )
 
 type Selector struct {
-	FieldPos CardPos
-	Pos      AxialPos
-	Visible  bool
+	TimePos
+	Visible bool
 
 	blinkVisible bool
 	blinkTime    float64
@@ -25,9 +24,11 @@ type Selector struct {
 
 func NewSelector() *Selector {
 	return &Selector{
-		Visible:  false,
-		FieldPos: CardPos{},
-		Pos:      AxialPos{},
+		Visible: false,
+		TimePos: TimePos{
+			FieldPos: CardPos{},
+			TilePos:  AxialPos{},
+		},
 	}
 }
 
@@ -39,11 +40,11 @@ func (s *Selector) Draw(img *ebiten.Image, cam *util.Camera, f *Field) {
 
 	if selectorVisable {
 		op := &ebiten.DrawImageOptions{}
-		tile := f.GetAxial(s.Pos)
+		tile := f.GetAxial(s.TilePos)
 
 		size := selectorImgMask.Bounds().Size()
 
-		op.GeoM.Translate(f.Pos.X+tile.Pos.X-float64(size.X)/2, f.Pos.Y+tile.Pos.Y-float64(size.Y)/2)
+		op.GeoM.Translate(f.Pos.X+tile.CalcPos().X-float64(size.X)/2, f.Pos.Y+tile.CalcPos().Y-float64(size.Y)/2)
 		op.GeoM.Concat(*cam.GetMatrix())
 
 		img.DrawImage(selectorImgMask, op)

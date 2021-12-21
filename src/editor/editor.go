@@ -87,36 +87,36 @@ func update(e *editor) {
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.t.AddUnitAtTile(f, tile, &field.Fractions[1])
+			e.t.AddUnitAtTile(tile.TimePos, &field.Fractions[1])
 		} else if e.mode == 2 {
-			e.t.AddUnitAtTile(f, tile, &field.Fractions[0])
+			e.t.AddUnitAtTile(tile.TimePos, &field.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
-			_, unit := e.t.GetUnitAtPos(CardPos{}, tile.AxialPos)
+			_, unit := e.t.GetUnitAtPos(tile.TimePos)
 			if unit != nil {
 				e.t.S.FieldPos = f.Pos
-				e.t.S.Pos = unit.Pos
+				e.t.S.TilePos = unit.TilePos
 				e.t.S.Visible = true
 			}
 		}
 
 		e.t.Update()
 	} else if e.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		tile, f := getTile()
+		tile, _ := getTile()
 		if tile == nil {
 			return
 		}
 
 		if e.mode == 0 {
 			tile.Visable = false
-			e.t.RemoveUnitAtTile(f, tile)
+			e.t.RemoveUnitAtTile(tile)
 
 		} else if (e.mode == 1 || e.mode == 2) && tile.Visable {
-			e.t.RemoveUnitAtTile(f, tile)
+			e.t.RemoveUnitAtTile(tile)
 		} else if e.mode == 3 && tile.Visable && e.t.S.Visible {
-			_, unit := e.t.GetUnitAtPos(CardPos{}, e.t.S.Pos)
+			_, unit := e.t.GetUnitAtPos(e.t.S.TimePos)
 
 			if unit != nil && tile.Visable {
-				e.t.SetAction(unit, f.Pos, tile.AxialPos)
+				e.t.SetAction(unit, tile.TimePos)
 			}
 		}
 
