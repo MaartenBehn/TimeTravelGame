@@ -24,6 +24,8 @@ func (c customColor) RGBA() (r, g, b, a uint32) {
 }
 
 func Init() {
+	loadFont()
+
 	emptyImage = ebiten.NewImage(3, 3)
 	emptyImage.Fill(color.White)
 

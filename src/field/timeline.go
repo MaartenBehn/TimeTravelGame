@@ -1,9 +1,12 @@
 package field
 
 import (
+	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
+	"golang.org/x/image/colornames"
 )
 
 const fieldPadding = 30
@@ -156,4 +159,23 @@ func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
 	img.DrawImage(t.image, op)
 
 	t.S.Draw(img, cam)
+
+	if util.Debug {
+		for _, field := range t.Fields {
+			for _, tile := range field.Tiles {
+				if !tile.Visable {
+					continue
+				}
+
+				x, y := cam.GetMatrix().Apply(tile.CalcPos().X, tile.CalcPos().Y)
+				text.Draw(img, tile.TimePos.ToString(), debugFont, int(x), int(y), colornames.Green)
+			}
+		}
+
+		for _, unit := range t.Units {
+			txt := fmt.Sprintf("\nKind: %d", unit.Action.Kind)
+			x, y := cam.GetMatrix().Apply(unit.CalcPos().X, unit.CalcPos().Y)
+			text.Draw(img, txt, debugFont, int(x), int(y), colornames.Green)
+		}
+	}
 }

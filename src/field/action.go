@@ -149,7 +149,13 @@ func (t *Timeline) SubmitRound() {
 			winningAmount := 0
 			for _, unit := range position.moveUnits {
 
-				amount := unit.Action.Support + 1
+				var amount int
+				if unit == position.presentUnit {
+					amount = unit.Support + 1
+				} else {
+					amount = unit.Action.Support + 1
+				}
+
 				if amount > winningAmount {
 					position.winningUnit = unit
 					winningAmount = amount
@@ -241,19 +247,36 @@ func (t *Timeline) SubmitRound() {
 			}
 		}
 
+		newPosition := CardPos{X: -1, Y: -1}
 		if isAktive && !isWinning {
-			copyUnit := t.CopyUnit(unit)
-			copyUnit.FieldPos = unit.FieldPos.Add(CardPos{X: t.FieldBounds.X})
+			newPosition = unit.FieldPos.Add(CardPos{X: t.FieldBounds.X})
+		} else if newField != -1 && !isAktive && !isWinning {
+			newPosition = newFieldPositions[newField]
+		}
+
+		_, copyUnit := t.GetUnitAtPos(TimePos{unit.TilePos, newPosition})
+		if newPosition.X != -1 && copyUnit == nil {
+			copyUnit = t.CopyUnit(unit)
+			copyUnit.FieldPos = newPosition
 			if copyUnit.Action.FieldPos == unit.FieldPos {
 				copyUnit.Action.FieldPos = copyUnit.FieldPos
 			}
 		}
 
-		if newField != -1 && !isAktive && !isWinning {
-			copyUnit := t.CopyUnit(unit)
-			copyUnit.FieldPos = newFieldPositions[newField]
-			if copyUnit.Action.FieldPos == unit.FieldPos {
-				copyUnit.Action.FieldPos = copyUnit.FieldPos
+		if (unit.Action.Kind == actionSupport || unit.Action.Kind == actionMove) && copyUnit != nil {
+			supportsWinning := false
+			for _, position := range targetPositions {
+				if position.winningUnit == nil {
+					continue
+				}
+				if unit.Action.TimePos.SamePos(position.winningUnit.TimePos) ||
+					unit.Action.TimePos.SamePos(position.winningUnit.Action.TimePos) {
+					supportsWinning = true
+					break
+				}
+			}
+			if supportsWinning {
+				copyUnit.Action.Kind = actionStay
 			}
 		}
 	}

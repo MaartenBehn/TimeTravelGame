@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/blizzy78/ebitenui/image"
 	"github.com/blizzy78/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -139,7 +140,7 @@ const (
 )
 
 type uiResources struct {
-	fonts *fonts
+	fonts *util.Font
 
 	background *image.NineSlice
 
@@ -248,7 +249,7 @@ type toolTipResources struct {
 func newUIResources() (*uiResources, error) {
 	background := image.NewNineSliceColor(hexToColor(backgroundColor))
 
-	fonts, err := loadFonts()
+	fonts, err := util.LoadFonts()
 	if err != nil {
 		return nil, err
 	}
@@ -313,10 +314,10 @@ func newUIResources() (*uiResources, error) {
 		text: &textResources{
 			idleColor:     hexToColor(textIdleColor),
 			disabledColor: hexToColor(textDisabledColor),
-			face:          fonts.face,
-			titleFace:     fonts.titleFace,
-			bigTitleFace:  fonts.bigTitleFace,
-			smallFace:     fonts.toolTipFace,
+			face:          fonts.Face,
+			titleFace:     fonts.TitleFace,
+			bigTitleFace:  fonts.BigTitleFace,
+			smallFace:     fonts.ToolTipFace,
 		},
 
 		button:      button,
@@ -333,7 +334,7 @@ func newUIResources() (*uiResources, error) {
 	}, nil
 }
 
-func newButtonResources(fonts *fonts) (*buttonResources, error) {
+func newButtonResources(fonts *util.Font) (*buttonResources, error) {
 	idle, err := loadImageNineSlice("res/graphics/button-idle.png", 12, 0)
 	if err != nil {
 		return nil, err
@@ -369,7 +370,7 @@ func newButtonResources(fonts *fonts) (*buttonResources, error) {
 			Disabled: hexToColor(buttonDisabledColor),
 		},
 
-		face: fonts.face,
+		face: fonts.Face,
 
 		padding: widget.Insets{
 			Left:  30,
@@ -427,18 +428,18 @@ func newCheckboxResources() (*checkboxResources, error) {
 	}, nil
 }
 
-func newLabelResources(fonts *fonts) *labelResources {
+func newLabelResources(fonts *util.Font) *labelResources {
 	return &labelResources{
 		text: &widget.LabelColor{
 			Idle:     hexToColor(labelIdleColor),
 			Disabled: hexToColor(labelDisabledColor),
 		},
 
-		face: fonts.face,
+		face: fonts.Face,
 	}
 }
 
-func newComboButtonResources(fonts *fonts) (*comboButtonResources, error) {
+func newComboButtonResources(fonts *util.Font) (*comboButtonResources, error) {
 	idle, err := loadImageNineSlice("res/graphics/combo-button-idle.png", 12, 0)
 	if err != nil {
 		return nil, err
@@ -479,7 +480,7 @@ func newComboButtonResources(fonts *fonts) (*comboButtonResources, error) {
 			Disabled: hexToColor(buttonDisabledColor),
 		},
 
-		face:    fonts.face,
+		face:    fonts.Face,
 		graphic: arrowDown,
 
 		padding: widget.Insets{
@@ -489,7 +490,7 @@ func newComboButtonResources(fonts *fonts) (*comboButtonResources, error) {
 	}, nil
 }
 
-func newListResources(fonts *fonts) (*listResources, error) {
+func newListResources(fonts *util.Font) (*listResources, error) {
 	idle, _, err := ebitenutil.NewImageFromFile("res/graphics/list-idle.png")
 	if err != nil {
 		return nil, err
@@ -551,7 +552,7 @@ func newListResources(fonts *fonts) (*listResources, error) {
 		},
 
 		handleSize: 5,
-		face:       fonts.face,
+		face:       fonts.Face,
 
 		entry: &widget.ListEntryColor{
 			Unselected:         hexToColor(textIdleColor),
@@ -634,7 +635,7 @@ func newPanelResources() (*panelResources, error) {
 	}, nil
 }
 
-func newTabBookResources(fonts *fonts) (*tabBookResources, error) {
+func newTabBookResources(fonts *util.Font) (*tabBookResources, error) {
 	selectedIdle, err := loadImageNineSlice("res/graphics/button-selected-idle.png", 12, 0)
 	if err != nil {
 		return nil, err
@@ -692,7 +693,7 @@ func newTabBookResources(fonts *fonts) (*tabBookResources, error) {
 	return &tabBookResources{
 		selectedButton: selected,
 		idleButton:     unselected,
-		buttonFace:     fonts.face,
+		buttonFace:     fonts.Face,
 
 		buttonText: &widget.ButtonTextColor{
 			Idle:     hexToColor(buttonIdleColor),
@@ -706,7 +707,7 @@ func newTabBookResources(fonts *fonts) (*tabBookResources, error) {
 	}, nil
 }
 
-func newHeaderResources(fonts *fonts) (*headerResources, error) {
+func newHeaderResources(fonts *util.Font) (*headerResources, error) {
 	bg, err := loadImageNineSlice("res/graphics/header.png", 446, 9)
 	if err != nil {
 		return nil, err
@@ -722,12 +723,12 @@ func newHeaderResources(fonts *fonts) (*headerResources, error) {
 			Bottom: 4,
 		},
 
-		face:  fonts.bigTitleFace,
+		face:  fonts.BigTitleFace,
 		color: hexToColor(headerColor),
 	}, nil
 }
 
-func newTextInputResources(fonts *fonts) (*textInputResources, error) {
+func newTextInputResources(fonts *util.Font) (*textInputResources, error) {
 	idle, _, err := ebitenutil.NewImageFromFile("res/graphics/text-input-idle.png")
 	if err != nil {
 		return nil, err
@@ -751,7 +752,7 @@ func newTextInputResources(fonts *fonts) (*textInputResources, error) {
 			Bottom: 4,
 		},
 
-		face: fonts.face,
+		face: fonts.Face,
 
 		color: &widget.TextInputColor{
 			Idle:          hexToColor(textIdleColor),
@@ -762,7 +763,7 @@ func newTextInputResources(fonts *fonts) (*textInputResources, error) {
 	}, nil
 }
 
-func newToolTipResources(fonts *fonts) (*toolTipResources, error) {
+func newToolTipResources(fonts *util.Font) (*toolTipResources, error) {
 	bg, _, err := ebitenutil.NewImageFromFile("res/graphics/tool-tip.png")
 	if err != nil {
 		return nil, err
@@ -778,13 +779,13 @@ func newToolTipResources(fonts *fonts) (*toolTipResources, error) {
 			Bottom: 10,
 		},
 
-		face:  fonts.toolTipFace,
+		face:  fonts.ToolTipFace,
 		color: hexToColor(toolTipColor),
 	}, nil
 }
 
 func (u *uiResources) close() {
-	u.fonts.close()
+	u.fonts.Close()
 }
 
 func hexToColor(h string) color.Color {

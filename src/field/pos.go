@@ -1,6 +1,9 @@
 package field
 
-import . "github.com/Stroby241/TimeTravelGame/src/math"
+import (
+	"fmt"
+	. "github.com/Stroby241/TimeTravelGame/src/math"
+)
 
 type TimePos struct {
 	TilePos  AxialPos
@@ -17,4 +20,8 @@ func (p TimePos) CalcPos() CardPos {
 
 func (p TimePos) CalcTilePos() CardPos {
 	return p.TilePos.MulFloat(tileSize * 2).ToCard().AddFloat(tileSize)
+}
+
+func (p TimePos) ToString() string {
+	return fmt.Sprintf("Q: %.0f R: %.0f X: %.0f Y: %.0f", p.TilePos.Q, p.TilePos.R, p.FieldPos.X, p.FieldPos.Y)
 }

@@ -1,9 +1,7 @@
 package field
 
 import (
-	"fmt"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
-	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
 	"math"
 )
@@ -17,9 +15,6 @@ const (
 )
 
 func DrawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction) {
-	if util.Debug {
-		fmt.Println("---------------- Draw Arrow --------------")
-	}
 
 	vec := fromPos.Sub(toPos)
 
