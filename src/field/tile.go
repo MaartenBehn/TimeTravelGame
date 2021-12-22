@@ -6,7 +6,8 @@ import (
 	"math"
 )
 
-var tileSize = 10.0                    // Scaling factor for Tile Size.
+var tileSize = 10.0 // Scaling factor for Tile Size.
+var useTileImg = true
 var tileHeigth = 2 * tileSize          // From Tutorial not uesd at the moment
 var tileWith = math.Sqrt(3) * tileSize // From Tutorial not uesd at the moment
 
@@ -72,8 +73,16 @@ func (t Tile) draw(img *ebiten.Image, active bool) {
 		t.vertices[0].ColorR = 1
 	}
 
-	op := &ebiten.DrawTrianglesOptions{}
-	op.Address = ebiten.AddressUnsafe
+	if useTileImg {
+		w, h := tileImgae.Size()
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(t.CalcTilePos().X-float64(w)/2, t.CalcTilePos().Y-float64(h)/2)
 
-	img.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
+		img.DrawImage(tileImgae, op)
+	} else {
+		op := &ebiten.DrawTrianglesOptions{}
+		op.Address = ebiten.AddressUnsafe
+
+		img.DrawTriangles(t.vertices, tileIndecies, emptyImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image), op)
+	}
 }

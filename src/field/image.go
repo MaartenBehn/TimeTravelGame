@@ -10,6 +10,7 @@ import (
 var (
 	emptyImage      *ebiten.Image
 	selectorImgMask *ebiten.Image
+	tileImgae       *ebiten.Image
 )
 
 type customColor struct {
@@ -46,6 +47,9 @@ func Init() {
 	arrowCornerImgMask, _, err := ebitenutil.NewImageFromFile("res/sprites/arrow_corner.png")
 	checkErr(err)
 	arrowEndImgMask, _, err := ebitenutil.NewImageFromFile("res/sprites/arrow_end.png")
+	checkErr(err)
+
+	tileImgae, _, err = ebitenutil.NewImageFromFile("res/sprites/tile.png")
 	checkErr(err)
 
 	for i, fraction := range Fractions {
