@@ -164,7 +164,16 @@ func (t *Timeline) SubmitRound() {
 
 				var amount int
 				if unit == position.presentUnit {
-					amount = unit.Support + 1
+					isWinningSomewhereElse := false
+					for _, targetPosition := range targetPositions {
+						if targetPosition.winningUnit == position.presentUnit {
+							isWinningSomewhereElse = true
+						}
+					}
+
+					if !isWinningSomewhereElse {
+						amount = unit.Support + 1
+					}
 				} else {
 					amount = unit.Action.Support + 1
 				}
@@ -183,6 +192,7 @@ func (t *Timeline) SubmitRound() {
 
 			if position.winningUnit != oldWinningUnit {
 				changeHappend = true
+				break
 			}
 		}
 	}

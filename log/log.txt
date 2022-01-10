@@ -1,243 +1,26 @@
-[2J[m[H
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[H]0;C:\Users\maart\AppData\Local\Temp\GoLand\___go_build_Debug.exe[?25hTimeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
-Timeline Update
+[2J[m[HAPI server listening at: 127.0.0.1:64977
+]0;C:\Program Files\JetBrains\GoLand 2021.3.2\plugins\go\lib\dlv\windows\dlv.exe[?25h[25l[HAPI server listening at: 127.0.0.1:64977[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[2;1H[?25hTimeline Update
 Timeline Update
 Timeline Update
 Timeline Update
