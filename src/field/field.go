@@ -26,8 +26,9 @@ func NewField(size int, bounds CardPos, pos CardPos) *Field {
 	for i, _ := range field.Tiles {
 		q, r := reverseIndex(i, size)
 		field.Tiles[i] = NewTile(TimePos{
-			TilePos:  AxialPos{Q: float64(q), R: float64(r)},
-			FieldPos: pos,
+			TilePos:     AxialPos{Q: float64(q), R: float64(r)},
+			FieldPos:    pos,
+			FieldBounds: bounds,
 		})
 	}
 
@@ -72,7 +73,7 @@ func (f *Field) GetAxial(pos AxialPos) *Tile {
 }
 
 func (f *Field) GetCard(pos CardPos) *Tile {
-	pos = pos.Sub(f.Pos.Add(CardPos{X: tileSize, Y: tileSize}))
+	pos = pos.Sub(f.Pos.Mul(f.Bounds).Add(CardPos{X: tileSize, Y: tileSize}))
 	axialPos := pos.ToAxial().DivFloat(tileSize * 2).Round()
 	return f.GetAxial(axialPos)
 }
@@ -87,7 +88,9 @@ func (f *Field) Update() {
 
 func (f *Field) Draw(img *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(f.Pos.X, f.Pos.Y)
+
+	pos := f.Pos.Mul(f.Bounds)
+	op.GeoM.Translate(pos.X, pos.Y)
 
 	img.DrawImage(f.image, op)
 }

@@ -40,7 +40,7 @@ func NewTimeline(fieldSize int) *Timeline {
 
 		Units: []*Unit{},
 
-		S: NewSelector(),
+		S: NewSelector(bounds),
 	}
 
 	timeline.makeReady()
@@ -53,13 +53,13 @@ func (t *Timeline) makeReady() {
 		field.makeReady()
 	}
 	t.makeReadyUnits()
-	t.createImage()
+	t.UpdateImage()
 }
 
-func (t *Timeline) createImage() {
-	size := CardPos{X: 1000, Y: 1000}
+func (t *Timeline) UpdateImage() {
+	size := CardPos{X: 10, Y: 10}
 	for pos := range t.Fields {
-		newSize := pos.Add(t.FieldBounds)
+		newSize := pos.Mul(t.FieldBounds).Add(t.FieldBounds)
 		if newSize.X >= size.X {
 			size.X = newSize.X
 		}
@@ -70,12 +70,10 @@ func (t *Timeline) createImage() {
 
 	if t.image == nil {
 		t.image = ebiten.NewImage(int(size.X), int(size.Y))
-		return
-	}
-
-	w, h := t.image.Size()
-	if w != int(size.X) || h != int(size.Y) {
+	} else if w, h := t.image.Size(); w != int(size.X) || h != int(size.Y) {
 		t.image = ebiten.NewImage(int(size.X), int(size.Y))
+	} else {
+		t.image.Clear()
 	}
 }
 
@@ -117,8 +115,10 @@ func (t *Timeline) CopyField(toPos CardPos, fromField *Field) *Field {
 func (t *Timeline) Get(pos CardPos) (*Tile, *Field) {
 	var field *Field
 	for _, f := range t.Fields {
-		if pos.X >= f.Pos.X && pos.X < f.Pos.X+f.Bounds.X &&
-			pos.Y >= f.Pos.Y && pos.Y < f.Pos.Y+f.Bounds.Y {
+
+		fieldPos := f.Pos.Mul(f.Bounds)
+		if pos.X >= fieldPos.X && pos.X < fieldPos.X+f.Bounds.X &&
+			pos.Y >= fieldPos.Y && pos.Y < fieldPos.Y+f.Bounds.Y {
 			field = f
 			break
 		}
@@ -132,7 +132,10 @@ func (t *Timeline) Get(pos CardPos) (*Tile, *Field) {
 }
 
 func (t *Timeline) Update() {
-	t.image.Clear()
+	if util.Debug {
+		fmt.Println("Timeline Update")
+	}
+	t.UpdateImage()
 
 	// Draw Field
 	for _, field := range t.Fields {
@@ -145,10 +148,12 @@ func (t *Timeline) Update() {
 		unit.draw(t.image, &Fractions[unit.FactionId])
 	}
 
+	_, selectedUnit := t.GetUnitAtPos(t.S.TimePos)
+
 	// Draw Arrows
 	for _, unit := range t.Units {
 		if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
-			DrawArrow(unit.CalcPos(), unit.Action.CalcPos(), t.image, &Fractions[unit.FactionId])
+			DrawArrow(unit.CalcPos(), unit.Action.CalcPos(), t.image, &Fractions[unit.FactionId], selectedUnit == unit)
 		}
 	}
 }
@@ -176,6 +181,16 @@ func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
 			txt := fmt.Sprintf("\nKind: %d", unit.Action.Kind)
 			x, y := cam.GetMatrix().Apply(unit.CalcPos().X, unit.CalcPos().Y)
 			text.Draw(img, txt, debugFont, int(x), int(y), colornames.Green)
+		}
+
+		_, selectedUnit := t.GetUnitAtPos(t.S.TimePos)
+		if selectedUnit != nil {
+			moves := selectedUnit.GetPositions(selectedUnit.TimePos, t)
+			for _, move := range moves {
+				txt := fmt.Sprintf("\n\nMovable")
+				x, y := cam.GetMatrix().Apply(move.CalcPos().X, move.CalcPos().Y)
+				text.Draw(img, txt, debugFont, int(x), int(y), colornames.Green)
+			}
 		}
 	}
 }

@@ -14,7 +14,7 @@ const (
 	lineLeft  = 4
 )
 
-func DrawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction) {
+func DrawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Fraction, selected bool) {
 
 	vec := fromPos.Sub(toPos)
 
@@ -145,12 +145,24 @@ func DrawArrow(fromPos CardPos, toPos CardPos, img *ebiten.Image, fraction *Frac
 		op4.GeoM.Translate(fromPos.X+5, fromPos.Y-vec.Y+5)
 	}
 
-	img.DrawImage(fraction.Images["arrow_tip"], op)
-	img.DrawImage(fraction.Images["arrow_end"], op2)
-	img.DrawImage(fraction.Images["arrow_straigth"], op4)
+	if selected {
+		img.DrawImage(fraction.Images["arrow_tip"], op)
+		img.DrawImage(fraction.Images["arrow_end"], op2)
+		img.DrawImage(fraction.Images["arrow_straigth"], op4)
 
-	if secondLine != lineNone {
-		img.DrawImage(fraction.Images["arrow_corner"], op3)
-		img.DrawImage(fraction.Images["arrow_straigth"], op5)
+		if secondLine != lineNone {
+			img.DrawImage(fraction.Images["arrow_corner"], op3)
+			img.DrawImage(fraction.Images["arrow_straigth"], op5)
+		}
+	} else {
+		img.DrawImage(fraction.Images["arrow_tip_ligth"], op)
+		img.DrawImage(fraction.Images["arrow_end_ligth"], op2)
+		img.DrawImage(fraction.Images["arrow_straigth_ligth"], op4)
+
+		if secondLine != lineNone {
+			img.DrawImage(fraction.Images["arrow_corner_ligth"], op3)
+			img.DrawImage(fraction.Images["arrow_straigth_ligth"], op5)
+		}
 	}
+
 }

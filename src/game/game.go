@@ -25,28 +25,51 @@ func load(data interface{}) {
 	}
 
 	updateId := event.On(event.EventUpdate, func(data interface{}) {
-		update(g)
+		g.update()
 	})
 
 	drawId := event.On(event.EventDraw, func(data interface{}) {
-		draw(data.(*ebiten.Image), g)
+		g.draw(data.(*ebiten.Image))
 	})
 
-	loadMapId := event.On(event.EventGameLoadMap, func(data interface{}) {
+	loadMapId := event.On(event.EventGameUILoadMap, func(data interface{}) {
 		g.t = field.LoadTimeline(data.(string))
+
+		users = []user{
+			NewPlayer(0, 0, g.t, util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10})),
+			//NewPlayer(1, 1, g.t, util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10})),
+			NewBasicAI(1, 1, g.t, g.cam),
+		}
+
+		playerIds = []int{0}
+		aktiveUser = 0
 	})
 
-	submitRoundId := event.On(event.EventGameSubmitRound, func(data interface{}) {
-		g.t.SubmitRound()
-		g.t.Update()
+	uiSubmitId := event.On(event.EventGameUISubmitRound, func(data interface{}) {
+		if users[aktiveUser].isPlayer() {
+			event.Go(event.EventGameSubmitUser, aktiveUser)
+		}
+	})
+
+	userSubmitId := event.On(event.EventGameSubmitUser, func(data interface{}) {
+		if data.(int) == aktiveUser {
+
+			aktiveUser++
+			if aktiveUser >= len(users) {
+				g.t.SubmitRound()
+				aktiveUser = 0
+			}
+		}
 	})
 
 	var unloadId event.ReciverId
 	event.On(event.EventGameUnload, func(data interface{}) {
 		event.UnOn(event.EventUpdate, updateId)
 		event.UnOn(event.EventDraw, drawId)
-		event.UnOn(event.EventGameLoadMap, loadMapId)
-		event.UnOn(event.EventGameSubmitRound, submitRoundId)
+		event.UnOn(event.EventGameUILoadMap, loadMapId)
+
+		event.UnOn(event.EventGameUISubmitRound, uiSubmitId)
+		event.UnOn(event.EventGameSubmitUser, userSubmitId)
 
 		event.UnOn(event.EventGameUnload, unloadId)
 
@@ -56,53 +79,22 @@ func load(data interface{}) {
 	event.Go(event.EventUIShowPanel, ui.PageGame)
 }
 
-func update(g *game) {
-	mouseX, mouseY := ebiten.CursorPosition()
-	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
+var users []user
+var playerIds []int
+var aktiveUser int
 
-	getTile := func() (*field.Tile, *field.Field) {
-		mat := *g.cam.GetMatrix()
-		mat.Invert()
-
-		clickPos := CardPos{}
-		clickPos.X, clickPos.Y = mat.Apply(mouse.X, mouse.Y)
-
-		tile, field := g.t.Get(clickPos)
-		return tile, field
+func (g *game) update() {
+	if users == nil || users[aktiveUser] == nil {
+		return
 	}
 
-	if g.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		tile, _ := getTile()
-		if tile == nil {
-			return
-		}
-
-		_, unit := g.t.GetUnitAtPos(tile.TimePos)
-		if unit != nil {
-			g.t.S.TimePos = unit.TimePos
-			g.t.S.Visible = true
-		}
-
-		g.t.Update()
-	} else if g.t != nil && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		tile, _ := getTile()
-		if tile == nil {
-			return
-		}
-
-		_, unit := g.t.GetUnitAtPos(g.t.S.TimePos)
-		field := g.t.Fields[unit.FieldPos]
-
-		if unit != nil && tile.Visable && field.Active {
-			g.t.SetAction(unit, tile.TimePos)
-		}
-
-		g.t.Update()
-	}
+	users[aktiveUser].update()
 }
 
-func draw(screen *ebiten.Image, g *game) {
-	if g.t != nil {
-		g.t.Draw(screen, g.cam)
+func (g *game) draw(screen *ebiten.Image) {
+	if users == nil || users[aktiveUser] == nil {
+		return
 	}
+
+	users[aktiveUser].draw(screen)
 }

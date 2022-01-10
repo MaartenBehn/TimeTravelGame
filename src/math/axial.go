@@ -79,8 +79,12 @@ func (a AxialPos) Round() AxialPos {
 	return AxialPos{Q: math.Round(a.Q), R: math.Round(a.R)}
 }
 
-/*
-func (a AxialPos) Round() AxialPos {
-	return a.ToCube().Round().ToAxial()
+func (a AxialPos) MoveRange(r float64) []AxialPos {
+	results := a.ToCube().MoveRange(r)
+	axialResult := make([]AxialPos, len(results))
+
+	for i, result := range results {
+		axialResult[i] = result.ToAxial()
+	}
+	return axialResult
 }
-*/

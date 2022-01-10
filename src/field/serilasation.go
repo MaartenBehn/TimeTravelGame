@@ -7,7 +7,6 @@ import (
 )
 
 func (t *Timeline) Save(name string) {
-
 	var buffer bytes.Buffer
 	e := gob.NewEncoder(&buffer)
 	if err := e.Encode(*t); err != nil {

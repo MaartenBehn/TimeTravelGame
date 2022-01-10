@@ -1,6 +1,7 @@
 package field
 
 import (
+	"encoding/gob"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
@@ -25,6 +26,8 @@ func (c customColor) RGBA() (r, g, b, a uint32) {
 }
 
 func Init() {
+	gob.Register(BasicMovePattern{})
+
 	loadFont()
 
 	emptyImage = ebiten.NewImage(3, 3)
@@ -65,37 +68,56 @@ func Init() {
 
 		w, h = arrowTipImgMask.Size()
 		arrowTipImg := ebiten.NewImage(w, h)
+		arrowTipImgL := ebiten.NewImage(w, h)
 
 		w, h = arrowStraigthImgMask.Size()
 		arrowStraigthImg := ebiten.NewImage(w, h)
+		arrowStraigthImgL := ebiten.NewImage(w, h)
 
 		w, h = arrowCornerImgMask.Size()
 		arrowCornerImg := ebiten.NewImage(w, h)
+		arrowCornerImgL := ebiten.NewImage(w, h)
 
 		w, h = arrowEndImgMask.Size()
 		arrowEndImg := ebiten.NewImage(w, h)
+		arrowEndImgL := ebiten.NewImage(w, h)
 
 		unitImg.Fill(fraction.color)
 		unitImg.DrawImage(unitImgMask, op)
 
-		arrowTipImg.Fill(fraction.colorLigth)
+		arrowTipImg.Fill(fraction.color)
 		arrowTipImg.DrawImage(arrowTipImgMask, op)
+		arrowTipImgL.Fill(fraction.colorLigth)
+		arrowTipImgL.DrawImage(arrowTipImgMask, op)
 
-		arrowStraigthImg.Fill(fraction.colorLigth)
+		arrowStraigthImg.Fill(fraction.color)
 		arrowStraigthImg.DrawImage(arrowStraigthImgMask, op)
+		arrowStraigthImgL.Fill(fraction.colorLigth)
+		arrowStraigthImgL.DrawImage(arrowStraigthImgMask, op)
 
-		arrowCornerImg.Fill(fraction.colorLigth)
+		arrowCornerImg.Fill(fraction.color)
 		arrowCornerImg.DrawImage(arrowCornerImgMask, op)
+		arrowCornerImgL.Fill(fraction.colorLigth)
+		arrowCornerImgL.DrawImage(arrowCornerImgMask, op)
 
-		arrowEndImg.Fill(fraction.colorLigth)
+		arrowEndImg.Fill(fraction.color)
 		arrowEndImg.DrawImage(arrowEndImgMask, op)
+		arrowEndImgL.Fill(fraction.colorLigth)
+		arrowEndImgL.DrawImage(arrowEndImgMask, op)
 
 		fraction.Images = map[string]*ebiten.Image{}
 		fraction.Images["unit"] = unitImg
 		fraction.Images["arrow_tip"] = arrowTipImg
+		fraction.Images["arrow_tip_ligth"] = arrowTipImgL
+
 		fraction.Images["arrow_straigth"] = arrowStraigthImg
+		fraction.Images["arrow_straigth_ligth"] = arrowStraigthImgL
+
 		fraction.Images["arrow_corner"] = arrowCornerImg
+		fraction.Images["arrow_corner_ligth"] = arrowCornerImgL
+
 		fraction.Images["arrow_end"] = arrowEndImg
+		fraction.Images["arrow_end_ligth"] = arrowEndImgL
 
 		Fractions[i] = fraction
 	}

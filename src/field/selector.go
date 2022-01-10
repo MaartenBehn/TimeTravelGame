@@ -22,12 +22,13 @@ type Selector struct {
 	blinkTime    float64
 }
 
-func NewSelector() *Selector {
+func NewSelector(fieldBounds CardPos) *Selector {
 	return &Selector{
 		Visible: false,
 		TimePos: TimePos{
-			FieldPos: CardPos{},
-			TilePos:  AxialPos{},
+			FieldPos:    CardPos{},
+			TilePos:     AxialPos{},
+			FieldBounds: fieldBounds,
 		},
 	}
 }

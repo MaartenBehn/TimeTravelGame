@@ -32,17 +32,17 @@ func load(data interface{}) {
 	drawId := event.On(event.EventDraw, func(data interface{}) {
 		draw(data.(*ebiten.Image), e)
 	})
-	newMapId := event.On(event.EventEditorNewMap, func(data interface{}) {
+	newMapId := event.On(event.EventEditorUINewMap, func(data interface{}) {
 		e.t = field.NewTimeline(data.(int))
 		e.t.AddField(CardPos{})
 	})
-	saveMapId := event.On(event.EventEditorSaveMap, func(data interface{}) {
+	saveMapId := event.On(event.EventEditorUISaveMap, func(data interface{}) {
 		e.t.Save(data.(string))
 	})
-	loadMapId := event.On(event.EventEditorLoadMap, func(data interface{}) {
+	loadMapId := event.On(event.EventEditorUILoadMap, func(data interface{}) {
 		e.t = field.LoadTimeline(data.(string))
 	})
-	modeId := event.On(event.EventEditorSetMode, func(data interface{}) {
+	modeId := event.On(event.EventEditorUISetMode, func(data interface{}) {
 		e.mode = data.(int)
 	})
 
@@ -50,10 +50,10 @@ func load(data interface{}) {
 	unloadId = event.On(event.EventEditorUnload, func(data interface{}) {
 		event.UnOn(event.EventUpdate, updateId)
 		event.UnOn(event.EventDraw, drawId)
-		event.UnOn(event.EventEditorNewMap, newMapId)
-		event.UnOn(event.EventEditorSaveMap, saveMapId)
-		event.UnOn(event.EventEditorLoadMap, loadMapId)
-		event.UnOn(event.EventEditorSetMode, modeId)
+		event.UnOn(event.EventEditorUINewMap, newMapId)
+		event.UnOn(event.EventEditorUISaveMap, saveMapId)
+		event.UnOn(event.EventEditorUILoadMap, loadMapId)
+		event.UnOn(event.EventEditorUISetMode, modeId)
 
 		event.UnOn(event.EventEditorUnload, unloadId)
 

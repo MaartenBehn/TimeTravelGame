@@ -86,7 +86,7 @@ func createMapEditorPage(res *uiResources, ui func() *ebitenui.UI) widget.Prefer
 		func(args *widget.ListComboButtonEntrySelectedEventArgs) {
 			for i, entry := range entries {
 				if entry.(string) == args.Entry.(string) {
-					event.Go(event.EventEditorSetMode, i)
+					event.Go(event.EventEditorUISetMode, i)
 				}
 			}
 			c.RequestRelayout()
@@ -179,21 +179,21 @@ func openNewMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
 		if err != nil {
 			return false
 		}
-		event.Go(event.EventEditorNewMap, x)
+		event.Go(event.EventEditorUINewMap, x)
 		return true
 	}, 120)
 }
 
 func openSaveMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
 	openMapEditorPopUp(res, ui, "Save", "Set Name", func(text string) bool {
-		event.Go(event.EventEditorSaveMap, text)
+		event.Go(event.EventEditorUISaveMap, text)
 		return true
 	}, 280)
 }
 
 func openLoadMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
 	openMapEditorPopUp(res, ui, "Load", "Set Name", func(text string) bool {
-		event.Go(event.EventEditorLoadMap, text)
+		event.Go(event.EventEditorUILoadMap, text)
 		return true
 	}, 430)
 }

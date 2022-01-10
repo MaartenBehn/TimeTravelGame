@@ -24,6 +24,19 @@ func NewAction() Action {
 
 func (t *Timeline) SetAction(unit *Unit, pos TimePos) {
 
+	moves := unit.GetPositions(pos, t)
+	isValid := false
+
+	for _, move := range moves {
+		if move.SamePos(unit.TimePos) {
+			isValid = true
+		}
+	}
+
+	if !isValid {
+		return
+	}
+
 	if unit.Action.Kind == actionMove {
 		for i := len(t.moveUnits) - 1; i >= 0; i-- {
 			if t.moveUnits[i] == unit {
@@ -192,9 +205,7 @@ func (t *Timeline) SubmitRound() {
 			}
 		}
 		if isAktive {
-
-			copyUnit.FieldPos = position.FieldPos.Add(CardPos{X: t.FieldBounds.X})
-
+			copyUnit.FieldPos = position.FieldPos.Add(CardPos{X: 1})
 		} else {
 			var newFieldPos CardPos
 			contained := false
@@ -209,7 +220,7 @@ func (t *Timeline) SubmitRound() {
 			if !contained {
 				fieldPositions = append(fieldPositions, position.FieldPos)
 
-				fieldY += t.FieldBounds.Y
+				fieldY += 1
 				newFieldPos = CardPos{X: position.FieldPos.X, Y: fieldY}
 				newFieldPositions = append(newFieldPositions, newFieldPos)
 			}
@@ -249,12 +260,12 @@ func (t *Timeline) SubmitRound() {
 
 		newPosition := CardPos{X: -1, Y: -1}
 		if isAktive && !isWinning {
-			newPosition = unit.FieldPos.Add(CardPos{X: t.FieldBounds.X})
+			newPosition = unit.FieldPos.Add(CardPos{X: 1})
 		} else if newField != -1 && !isAktive && !isWinning {
 			newPosition = newFieldPositions[newField]
 		}
 
-		_, copyUnit := t.GetUnitAtPos(TimePos{unit.TilePos, newPosition})
+		_, copyUnit := t.GetUnitAtPos(TimePos{unit.TilePos, newPosition, t.FieldBounds})
 		if newPosition.X != -1 && copyUnit == nil {
 			copyUnit = t.CopyUnit(unit)
 			copyUnit.FieldPos = newPosition
@@ -284,7 +295,7 @@ func (t *Timeline) SubmitRound() {
 	// Copy Aktive Fields
 	for i := len(t.ActiveFields) - 1; i >= 0; i-- {
 		field := t.Fields[t.ActiveFields[i]]
-		newPos := t.ActiveFields[i].Add(CardPos{X: t.FieldBounds.X})
+		newPos := t.ActiveFields[i].Add(CardPos{X: 1})
 		copyField := t.CopyField(newPos, field)
 
 		t.ActiveFields = append(t.ActiveFields, newPos)

@@ -6,17 +6,18 @@ const (
 
 	EventUIShowPanel EventId = 5
 
-	EventEditorLoad    EventId = 10
-	EventEditorUnload  EventId = 11
-	EventEditorNewMap  EventId = 12
-	EventEditorSaveMap EventId = 13
-	EventEditorLoadMap EventId = 14
-	EventEditorSetMode EventId = 15
+	EventEditorLoad      EventId = 10
+	EventEditorUnload    EventId = 11
+	EventEditorUINewMap  EventId = 12
+	EventEditorUISaveMap EventId = 13
+	EventEditorUILoadMap EventId = 14
+	EventEditorUISetMode EventId = 15
 
-	EventGameLoad        EventId = 20
-	EventGameUnload      EventId = 21
-	EventGameLoadMap     EventId = 22
-	EventGameSubmitRound EventId = 23
+	EventGameLoad          EventId = 20
+	EventGameUnload        EventId = 21
+	EventGameUILoadMap     EventId = 22
+	EventGameUISubmitRound EventId = 23
+	EventGameSubmitUser    EventId = 24
 
 	eventMax = 255
 )

@@ -51,7 +51,7 @@ func createGamePage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSi
 		widget.ButtonOpts.Text("Submit", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			event.Go(event.EventGameSubmitRound, nil)
+			event.Go(event.EventGameUISubmitRound, nil)
 		}),
 	))
 
@@ -60,7 +60,7 @@ func createGamePage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSi
 
 func openGameLoadMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
 	openMapEditorPopUp(res, ui, "Load", "Set Name", func(text string) bool {
-		event.Go(event.EventGameLoadMap, text)
+		event.Go(event.EventGameUILoadMap, text)
 		return true
 	}, 430)
 }

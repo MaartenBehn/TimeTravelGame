@@ -36,16 +36,18 @@ func getFractionIndex(f *Fraction) int {
 
 type Unit struct {
 	TimePos
+	MovePattern
 	FactionId int
 	Action    Action
 	Support   int
 }
 
-func NewUnit(pos TimePos, factionId int) *Unit {
+func NewUnit(pos TimePos, factionId int, pattern MovePattern) *Unit {
 	return &Unit{
-		FactionId: factionId,
-		TimePos:   pos,
-		Action:    NewAction(),
+		FactionId:   factionId,
+		TimePos:     pos,
+		Action:      NewAction(),
+		MovePattern: pattern,
 	}
 }
 
@@ -89,7 +91,7 @@ func (t *Timeline) AddUnitAtTile(pos TimePos, fraction *Fraction) *Unit {
 	if unit == nil {
 		id := getFractionIndex(fraction)
 
-		unit = NewUnit(pos, id)
+		unit = NewUnit(pos, id, BasicMovePattern{Stride: 1})
 		t.Units = append(t.Units, unit)
 	}
 	return unit

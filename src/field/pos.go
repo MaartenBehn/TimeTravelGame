@@ -6,8 +6,9 @@ import (
 )
 
 type TimePos struct {
-	TilePos  AxialPos
-	FieldPos CardPos
+	TilePos     AxialPos
+	FieldPos    CardPos
+	FieldBounds CardPos
 }
 
 func (p TimePos) SamePos(p2 TimePos) bool {
@@ -15,7 +16,7 @@ func (p TimePos) SamePos(p2 TimePos) bool {
 }
 
 func (p TimePos) CalcPos() CardPos {
-	return p.CalcTilePos().Add(p.FieldPos)
+	return p.CalcTilePos().Add(p.FieldPos.Mul(p.FieldBounds))
 }
 
 func (p TimePos) CalcTilePos() CardPos {
