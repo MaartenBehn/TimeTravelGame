@@ -2,10 +2,12 @@ package ui
 
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
+	"github.com/Stroby241/TimeTravelGame/src/math"
+	"github.com/blizzy78/ebitenui"
 	"github.com/blizzy78/ebitenui/widget"
 )
 
-func createStartPage(res *uiResources) widget.PreferredSizeLocateableWidget {
+func createStartPage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSizeLocateableWidget {
 	c := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -22,7 +24,7 @@ func createStartPage(res *uiResources) widget.PreferredSizeLocateableWidget {
 		widget.ButtonOpts.Text("Start Game", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			event.Go(event.EventGameLoad, nil)
+			openGameLoadMapPopUp(res, ui)
 		}),
 	))
 
@@ -36,4 +38,11 @@ func createStartPage(res *uiResources) widget.PreferredSizeLocateableWidget {
 	))
 
 	return c
+}
+
+func openGameLoadMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
+	openTextInputPopUp(res, ui, "Load", "Set Name", func(text string) bool {
+		event.Go(event.EventGameLoad, text)
+		return true
+	}, math.CardPos{X: 200, Y: 10})
 }

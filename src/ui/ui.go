@@ -78,7 +78,7 @@ func createPages(res *uiResources, ui *ebitenui.UI) {
 		return ui
 	}
 
-	pages[PageStart] = createStartPage(res)
+	pages[PageStart] = createStartPage(res, uiFunc)
 	pages[PageMapEditor] = createMapEditorPage(res, uiFunc)
 	pages[PageGame] = createGamePage(res, uiFunc)
 }

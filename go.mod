@@ -13,6 +13,7 @@ require (
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20211024062804-40e447a793be // indirect
 	github.com/jezek/xgb v0.0.0-20210312150743-0e0f116e1240 // indirect
 	github.com/jfeliu007/goplantuml v1.5.2 // indirect
+	github.com/pkg/profile v1.6.0 // indirect
 	github.com/spf13/afero v1.8.0 // indirect
 	golang.org/x/exp v0.0.0-20211111183329-cb5df436b1a8 // indirect
 	golang.org/x/mobile v0.0.0-20211109191125-d61a72f26a1a // indirect

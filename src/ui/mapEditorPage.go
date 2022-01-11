@@ -2,6 +2,7 @@ package ui
 
 import (
 	"github.com/Stroby241/TimeTravelGame/src/event"
+	"github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/blizzy78/ebitenui"
 	"image"
 	"strconv"
@@ -96,7 +97,7 @@ func createMapEditorPage(res *uiResources, ui func() *ebitenui.UI) widget.Prefer
 	return c
 }
 
-func openMapEditorPopUp(res *uiResources, ui func() *ebitenui.UI, name string, textPlaceholder string, f func(text string) bool, horizontalPos int) {
+func openTextInputPopUp(res *uiResources, ui func() *ebitenui.UI, name string, textPlaceholder string, f func(text string) bool, pos math.CardPos) {
 	var rw ebitenui.RemoveWindowFunc
 
 	c := widget.NewContainer(
@@ -166,7 +167,7 @@ func openMapEditorPopUp(res *uiResources, ui func() *ebitenui.UI, name string, t
 	)
 
 	r := image.Rect(0, 0, 400, 200)
-	r = r.Add(image.Point{horizontalPos, 100})
+	r = r.Add(image.Point{X: int(pos.X), Y: int(pos.Y)})
 	w.SetLocation(r)
 
 	rw = ui().AddWindow(w)
@@ -174,26 +175,26 @@ func openMapEditorPopUp(res *uiResources, ui func() *ebitenui.UI, name string, t
 }
 
 func openNewMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
-	openMapEditorPopUp(res, ui, "New Map", "Set Map Size", func(text string) bool {
+	openTextInputPopUp(res, ui, "New Map", "Set Map Size", func(text string) bool {
 		x, err := strconv.Atoi(text)
 		if err != nil {
 			return false
 		}
 		event.Go(event.EventEditorUINewMap, x)
 		return true
-	}, 120)
+	}, math.CardPos{X: 120, Y: 100})
 }
 
 func openSaveMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
-	openMapEditorPopUp(res, ui, "Save", "Set Name", func(text string) bool {
+	openTextInputPopUp(res, ui, "Save", "Set Name", func(text string) bool {
 		event.Go(event.EventEditorUISaveMap, text)
 		return true
-	}, 280)
+	}, math.CardPos{X: 280, Y: 100})
 }
 
 func openLoadMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
-	openMapEditorPopUp(res, ui, "Load", "Set Name", func(text string) bool {
+	openTextInputPopUp(res, ui, "Load", "Set Name", func(text string) bool {
 		event.Go(event.EventEditorUILoadMap, text)
 		return true
-	}, 430)
+	}, math.CardPos{X: 430, Y: 100})
 }

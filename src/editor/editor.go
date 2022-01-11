@@ -40,7 +40,7 @@ func load(data interface{}) {
 		e.t.Save(data.(string))
 	})
 	loadMapId := event.On(event.EventEditorUILoadMap, func(data interface{}) {
-		e.t = field.LoadTimeline(data.(string))
+		e.t = field.Load(data.(string))
 	})
 	modeId := event.On(event.EventEditorUISetMode, func(data interface{}) {
 		e.mode = data.(int)

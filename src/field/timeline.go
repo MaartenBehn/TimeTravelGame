@@ -26,6 +26,8 @@ type Timeline struct {
 	S *Selector
 
 	image *ebiten.Image
+
+	fieldY float64
 }
 
 func NewTimeline(fieldSize int) *Timeline {
@@ -43,37 +45,15 @@ func NewTimeline(fieldSize int) *Timeline {
 		S: NewSelector(bounds),
 	}
 
-	timeline.makeReady()
+	timeline.MakeReadyUI()
+	timeline.Update()
 
 	return timeline
 }
 
-func (t *Timeline) makeReady() {
+func (t *Timeline) MakeReadyUI() {
 	for _, field := range t.Fields {
-		field.makeReady()
-	}
-	t.makeReadyUnits()
-	t.UpdateImage()
-}
-
-func (t *Timeline) UpdateImage() {
-	size := CardPos{X: 10, Y: 10}
-	for pos := range t.Fields {
-		newSize := pos.Mul(t.FieldBounds).Add(t.FieldBounds)
-		if newSize.X >= size.X {
-			size.X = newSize.X
-		}
-		if newSize.Y >= size.Y {
-			size.Y = newSize.Y
-		}
-	}
-
-	if t.image == nil {
-		t.image = ebiten.NewImage(int(size.X), int(size.Y))
-	} else if w, h := t.image.Size(); w != int(size.X) || h != int(size.Y) {
-		t.image = ebiten.NewImage(int(size.X), int(size.Y))
-	} else {
-		t.image.Clear()
+		field.makeReadyUI()
 	}
 }
 
@@ -88,7 +68,7 @@ func (t *Timeline) AddField(pos CardPos) *Field {
 	f.Active = true
 	t.ActiveFields = append(t.ActiveFields, pos)
 
-	t.makeReady()
+	f.makeReadyUI()
 
 	return f
 }
@@ -104,8 +84,7 @@ func (t *Timeline) CopyField(toPos CardPos, fromField *Field) *Field {
 		copiedField.Tiles[i] = tile
 	}
 
-	copiedField.makeReady()
-	copiedField.Update()
+	copiedField.makeReadyUI()
 
 	t.Fields[toPos] = &copiedField
 
@@ -135,7 +114,26 @@ func (t *Timeline) Update() {
 	if util.Debug {
 		fmt.Println("Timeline Update")
 	}
-	t.UpdateImage()
+
+	//Update Image
+	size := CardPos{X: 10, Y: 10}
+	for pos := range t.Fields {
+		newSize := pos.Mul(t.FieldBounds).Add(t.FieldBounds)
+		if newSize.X >= size.X {
+			size.X = newSize.X
+		}
+		if newSize.Y >= size.Y {
+			size.Y = newSize.Y
+		}
+	}
+
+	if t.image == nil {
+		t.image = ebiten.NewImage(int(size.X), int(size.Y))
+	} else if w, h := t.image.Size(); w != int(size.X) || h != int(size.Y) {
+		t.image = ebiten.NewImage(int(size.X), int(size.Y))
+	} else {
+		t.image.Clear()
+	}
 
 	// Draw Field
 	for _, field := range t.Fields {
@@ -162,9 +160,9 @@ func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM = *cam.GetMatrix()
 	img.DrawImage(t.image, op)
-
 	t.S.Draw(img, cam)
 
+	// Debug
 	if util.Debug {
 		for _, field := range t.Fields {
 			for _, tile := range field.Tiles {

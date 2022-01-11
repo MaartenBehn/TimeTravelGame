@@ -23,7 +23,6 @@ func NewAction() Action {
 }
 
 func (t *Timeline) SetAction(unit *Unit, pos TimePos) {
-
 	moves := unit.GetPositions(pos, t)
 	isValid := false
 
@@ -108,11 +107,7 @@ type targetPos struct {
 	winningUnit *Unit
 }
 
-var fieldY float64
-
 func (t *Timeline) SubmitRound() {
-	t.makeReady()
-
 	var targetPositions []*targetPos
 	for _, unit := range t.moveUnits {
 
@@ -186,9 +181,11 @@ func (t *Timeline) SubmitRound() {
 				}
 			}
 
-			if position.presentUnit != nil && position.winningUnit == nil {
-				position.winningUnit = position.presentUnit
-			}
+			/*
+				if position.presentUnit != nil && position.winningUnit == nil {
+					position.winningUnit = position.presentUnit
+				}
+			*/
 
 			if position.winningUnit != oldWinningUnit {
 				changeHappend = true
@@ -230,8 +227,8 @@ func (t *Timeline) SubmitRound() {
 			if !contained {
 				fieldPositions = append(fieldPositions, position.FieldPos)
 
-				fieldY += 1
-				newFieldPos = CardPos{X: position.FieldPos.X, Y: fieldY}
+				t.fieldY += 1
+				newFieldPos = CardPos{X: position.FieldPos.X, Y: t.fieldY}
 				newFieldPositions = append(newFieldPositions, newFieldPos)
 			}
 
@@ -279,26 +276,7 @@ func (t *Timeline) SubmitRound() {
 		if newPosition.X != -1 && copyUnit == nil {
 			copyUnit = t.CopyUnit(unit)
 			copyUnit.FieldPos = newPosition
-			if copyUnit.Action.FieldPos == unit.FieldPos {
-				copyUnit.Action.FieldPos = copyUnit.FieldPos
-			}
-		}
-
-		if (unit.Action.Kind == actionSupport || unit.Action.Kind == actionMove) && copyUnit != nil {
-			supportsWinning := false
-			for _, position := range targetPositions {
-				if position.winningUnit == nil {
-					continue
-				}
-				if unit.Action.TimePos.SamePos(position.winningUnit.TimePos) ||
-					unit.Action.TimePos.SamePos(position.winningUnit.Action.TimePos) {
-					supportsWinning = true
-					break
-				}
-			}
-			if supportsWinning {
-				copyUnit.Action.Kind = actionStay
-			}
+			copyUnit.Action = NewAction()
 		}
 	}
 
@@ -324,6 +302,4 @@ func (t *Timeline) SubmitRound() {
 		copyField.Active = true
 		t.ActiveFields = append(t.ActiveFields, newPos)
 	}
-
-	t.Update()
 }

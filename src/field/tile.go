@@ -45,11 +45,11 @@ type Tile struct {
 
 func NewTile(pos TimePos) (tile Tile) {
 	tile.TimePos = pos
-	tile.makeReady()
+	tile.makeReadyUI()
 	return tile
 }
 
-func (t *Tile) makeReady() {
+func (t *Tile) makeReadyUI() {
 	t.vertices = make([]ebiten.Vertex, len(tileVertices))
 	for j, vertex := range tileVertices {
 		vertex.DstX += float32(t.CalcTilePos().X)

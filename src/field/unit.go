@@ -67,11 +67,8 @@ func (t *Timeline) makeReadyUnits() {
 
 	for _, unit := range t.Units {
 		if unit.Action.Kind == actionMove {
-
 			t.moveUnits = append(t.moveUnits, unit)
-
 		} else if unit.Action.Kind == actionSupport {
-
 			t.supportUnits = append(t.supportUnits, unit)
 		}
 	}

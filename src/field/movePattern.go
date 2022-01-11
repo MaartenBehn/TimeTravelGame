@@ -12,14 +12,17 @@ type BasicMovePattern struct {
 
 func (b BasicMovePattern) GetPositions(pos TimePos, t *Timeline) []TimePos {
 
-	var moves []TimePos
+	var moves = []TimePos{pos}
 	for x := -b.Stride; x <= b.Stride; x++ {
 		for y := -b.Stride; y <= b.Stride; y++ {
-			moves = append(moves, TimePos{
-				TilePos:     pos.TilePos,
-				FieldPos:    pos.FieldPos.Add(math.CardPos{X: float64(x), Y: float64(y)}),
-				FieldBounds: pos.FieldBounds,
-			})
+
+			if x != 0 || y != 0 {
+				moves = append(moves, TimePos{
+					TilePos:     pos.TilePos,
+					FieldPos:    pos.FieldPos.Add(math.CardPos{X: float64(x), Y: float64(y)}),
+					FieldBounds: pos.FieldBounds,
+				})
+			}
 
 			for _, axialPos := range math.AxialDirections {
 				moves = append(moves, TimePos{
@@ -28,7 +31,6 @@ func (b BasicMovePattern) GetPositions(pos TimePos, t *Timeline) []TimePos {
 					FieldBounds: pos.FieldBounds,
 				})
 			}
-
 		}
 	}
 	return moves

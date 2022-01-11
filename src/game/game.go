@@ -15,34 +15,36 @@ func Init() {
 }
 
 type game struct {
-	t   *field.Timeline
-	cam *util.Camera
+	t    *field.Timeline
+	cam  *util.Camera
+	done bool
 }
 
 func load(data interface{}) {
 	g := &game{
-		t:   nil,
-		cam: util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10}),
+		t:    field.Load(data.(string)),
+		cam:  util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10}),
+		done: false,
 	}
 
+	users = []user{
+		NewPlayer(0, 0, g.t, util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10})),
+		NewAI3(1, 1, g.t, g.cam, 10000),
+	}
+
+	playerIds = []int{0}
+	aktiveUser = 0
+
 	updateId := event.On(event.EventUpdate, func(data interface{}) {
+		if g.done {
+			return
+		}
+
 		g.update()
 	})
 
 	drawId := event.On(event.EventDraw, func(data interface{}) {
 		g.draw(data.(*ebiten.Image))
-	})
-
-	loadMapId := event.On(event.EventGameUILoadMap, func(data interface{}) {
-		g.t = field.LoadTimeline(data.(string))
-
-		users = []user{
-			NewPlayer(0, 0, g.t, util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10})),
-			NewBasicAI(1, 1, g.t, g.cam),
-		}
-
-		playerIds = []int{0}
-		aktiveUser = 0
 	})
 
 	uiSubmitId := event.On(event.EventGameUISubmitRound, func(data interface{}) {
@@ -52,26 +54,32 @@ func load(data interface{}) {
 	})
 
 	userSubmitId := event.On(event.EventGameSubmitUser, func(data interface{}) {
+		if g.done {
+			return
+		}
+
 		if data.(int) == aktiveUser {
 
 			aktiveUser++
 			if aktiveUser >= len(users) {
 				g.t.SubmitRound()
+				g.t.Update()
 
 				var won = -1
 				for i, u := range users {
 					u.evaluate()
 
-					if won == -1 && u.getScore() > 1 {
+					if won == -1 && u.getScore() > 0 {
 						won = i
-					} else if won >= 0 && u.getScore() > 1 {
+					} else if won >= 0 && u.getScore() > 0 {
 						won = -2
 						break
 					}
 				}
 
 				if won >= 0 {
-					fmt.Printf("Player: %d\n", won)
+					fmt.Printf("Player %d won.\n", won)
+					g.done = true
 				}
 
 				aktiveUser = 0
@@ -83,7 +91,6 @@ func load(data interface{}) {
 	event.On(event.EventGameUnload, func(data interface{}) {
 		event.UnOn(event.EventUpdate, updateId)
 		event.UnOn(event.EventDraw, drawId)
-		event.UnOn(event.EventGameUILoadMap, loadMapId)
 
 		event.UnOn(event.EventGameUISubmitRound, uiSubmitId)
 		event.UnOn(event.EventGameSubmitUser, userSubmitId)

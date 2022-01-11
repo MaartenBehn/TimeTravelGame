@@ -15,9 +15,8 @@ const (
 
 	EventGameLoad          EventId = 20
 	EventGameUnload        EventId = 21
-	EventGameUILoadMap     EventId = 22
-	EventGameUISubmitRound EventId = 23
-	EventGameSubmitUser    EventId = 24
+	EventGameUISubmitRound EventId = 22
+	EventGameSubmitUser    EventId = 23
 
 	eventMax = 255
 )

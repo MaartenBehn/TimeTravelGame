@@ -30,15 +30,6 @@ func createGamePage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSi
 
 	c1.AddChild(widget.NewButton(
 		widget.ButtonOpts.Image(res.button.image),
-		widget.ButtonOpts.Text("Load Map", res.button.face, res.button.text),
-		widget.ButtonOpts.TextPadding(res.button.padding),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			openGameLoadMapPopUp(res, ui)
-		}),
-	))
-
-	c1.AddChild(widget.NewButton(
-		widget.ButtonOpts.Image(res.button.image),
 		widget.ButtonOpts.Text("Main Menu", res.button.face, res.button.text),
 		widget.ButtonOpts.TextPadding(res.button.padding),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
@@ -56,11 +47,4 @@ func createGamePage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSi
 	))
 
 	return c
-}
-
-func openGameLoadMapPopUp(res *uiResources, ui func() *ebitenui.UI) {
-	openMapEditorPopUp(res, ui, "Load", "Set Name", func(text string) bool {
-		event.Go(event.EventGameUILoadMap, text)
-		return true
-	}, 430)
 }

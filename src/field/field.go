@@ -32,15 +32,15 @@ func NewField(size int, bounds CardPos, pos CardPos) *Field {
 		})
 	}
 
-	field.makeReady()
+	field.makeReadyUI()
 	field.Update()
 
 	return field
 }
 
-func (f *Field) makeReady() {
+func (f *Field) makeReadyUI() {
 	for i, tile := range f.Tiles {
-		tile.makeReady()
+		tile.makeReadyUI()
 		f.Tiles[i] = tile
 	}
 
