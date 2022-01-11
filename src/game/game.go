@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/Stroby241/TimeTravelGame/src/field"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
@@ -21,7 +22,7 @@ type game struct {
 func load(data interface{}) {
 	g := &game{
 		t:   nil,
-		cam: util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
+		cam: util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10}),
 	}
 
 	updateId := event.On(event.EventUpdate, func(data interface{}) {
@@ -36,8 +37,7 @@ func load(data interface{}) {
 		g.t = field.LoadTimeline(data.(string))
 
 		users = []user{
-			NewPlayer(0, 0, g.t, util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10})),
-			//NewPlayer(1, 1, g.t, util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10})),
+			NewPlayer(0, 0, g.t, util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10})),
 			NewBasicAI(1, 1, g.t, g.cam),
 		}
 
@@ -57,6 +57,23 @@ func load(data interface{}) {
 			aktiveUser++
 			if aktiveUser >= len(users) {
 				g.t.SubmitRound()
+
+				var won = -1
+				for i, u := range users {
+					u.evaluate()
+
+					if won == -1 && u.getScore() > 1 {
+						won = i
+					} else if won >= 0 && u.getScore() > 1 {
+						won = -2
+						break
+					}
+				}
+
+				if won >= 0 {
+					fmt.Printf("Player: %d\n", won)
+				}
+
 				aktiveUser = 0
 			}
 		}

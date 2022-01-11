@@ -22,6 +22,8 @@ func NewBasicAI(id int, factionId int, t *field.Timeline, cam *util.Camera) *bas
 
 func (ai *basicAI) isPlayer() bool { return false }
 
+func (ai *basicAI) getScore() int { return ai.score }
+
 func (ai *basicAI) update() {
 
 	for _, unit := range ai.t.Units {
@@ -58,4 +60,14 @@ func (ai *basicAI) draw(screen *ebiten.Image) {
 	}
 
 	ai.t.Draw(screen, ai.cam)
+}
+
+func (ai *basicAI) evaluate() {
+	ai.score = 0
+	for _, unit := range ai.t.Units {
+		field := ai.t.Fields[unit.FieldPos]
+		if field != nil && field.Active && unit.FactionId == ai.factionId {
+			ai.score++
+		}
+	}
 }

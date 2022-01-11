@@ -11,6 +11,8 @@ type user interface {
 	isPlayer() bool
 	update()
 	draw(screen *ebiten.Image)
+	evaluate()
+	getScore() int
 }
 
 type userData struct {
@@ -18,6 +20,7 @@ type userData struct {
 	factionId int
 	t         *field.Timeline
 	cam       *util.Camera
+	score     int
 }
 type player userData
 
@@ -31,6 +34,7 @@ func NewPlayer(id int, factionId int, t *field.Timeline, cam *util.Camera) *play
 }
 
 func (p *player) isPlayer() bool { return true }
+func (p *player) getScore() int  { return p.score }
 
 func (p *player) update() {
 	mouseX, mouseY := ebiten.CursorPosition()
@@ -83,4 +87,14 @@ func (p *player) draw(screen *ebiten.Image) {
 	}
 
 	p.t.Draw(screen, p.cam)
+}
+
+func (p *player) evaluate() {
+	p.score = 0
+	for _, unit := range p.t.Units {
+		field := p.t.Fields[unit.FieldPos]
+		if field != nil && field.Active && unit.FactionId == p.factionId {
+			p.score++
+		}
+	}
 }
