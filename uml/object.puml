@@ -3,8 +3,8 @@ namespace core {
     class "g:Game" << (S,Aquamarine) >> {
     }
 
-    "g:Game" "editor" <-- "editor.e:editor"
-    "g:Game" "game" <-- "game.g:game"
+    "game.g:game" -> "editor" "g:Game"
+    "g:Game" "game" <- "editor.e:editor"
 }
 
 namespace editor {
@@ -24,11 +24,15 @@ namespace game {
     "g:game" "player" <-- "player:player"
     "g:game" "ai" <-- "AI:AI3"
 
+    "player:player" -[hidden] "AI:AI3"
+
     class "AI:AI3" << (S,Aquamarine) >> {
         tries = 10000
     }
     "AI:AI3" "aiData" <-- "ai:userData"
     "player:player" "playerData" <-- "player:userData"
+
+    "player:userData" -[hidden] "ai:userData"
 
     class "player:player" << (S,Aquamarine) >> {
     }
@@ -170,6 +174,8 @@ namespace math {
         Q = n
         R = n
     }
+    "FieldBounds:CardPos" --[hidden] "FieldPos:CardPos"
+     "FieldPos:CardPos" --[hidden] "TilePos:AxialPos"
 
     class "FieldPos:CardPos" << (S,Aquamarine) >> {
         X = n
@@ -185,10 +191,14 @@ namespace math {
         X = n
         Y = n
     }
+    "camPos:CardPos" --[hidden] "camMaxPos:CardPos"
+    "camMaxPos:CardPos"  --[hidden] "camMinPos:CardPos"
+
     class "camMaxPos:CardPos" << (S,Aquamarine) >> {
         X = 100
         Y = 100
     }
+
     class "camMinPos:CardPos" << (S,Aquamarine) >> {
         X = 0
         Y = 0
@@ -197,6 +207,9 @@ namespace math {
         X = n
         Y = n
     }
+    "camScale:CardPos" --[hidden] "camMaxScale:CardPos"
+    "camMaxScale:CardPos"  --[hidden] "camMinScale:CardPos"
+
     class "camMaxScale:CardPos" << (S,Aquamarine) >> {
         X = 0.01
         Y = 0.01

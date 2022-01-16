@@ -24,7 +24,7 @@ namespace event {
 
 event.event <-- editor.editor :EventSystem
 event.event <-- game.game :EventSystem
-event.event <-- core.Game :EventSystem
+core.Game --> event.event :EventSystem
 event.event <-- ui.Page :EventSystem
 
 namespace editor {
@@ -35,7 +35,7 @@ namespace editor {
 
     }
     editor --> "1" field.Timeline : ptr
-    editor --> "1" util.Camera : ptr
+    editor -> "1" util.Camera : ptr
 
 }
 
@@ -68,7 +68,7 @@ namespace game {
 
     }
     game --> "1" field.Timeline : ptr
-    game --> "1" util.Camera : ptr
+    game -> "1" util.Camera : ptr
 
     class player << (S,Aquamarine) >> {
         - update()
@@ -97,7 +97,7 @@ namespace game {
         - evaluate()
     }
     userData --> "1" field.Timeline : ptr
-    userData --> "1" util.Camera : ptr
+    userData -> "1" util.Camera : ptr
 
 
     "userData" *.. "AI0"
@@ -116,6 +116,58 @@ namespace game {
 
 
 namespace field {
+    class Timeline << (S,Aquamarine) >> {
+        - moveUnits []*Unit
+        - supportUnits []*Unit
+        - image *ebiten.Image
+        - fieldY float64
+
+        + FieldSize int
+        + FieldBounds CardPos
+        + Fields <font color=blue>map</font>[CardPos]*Field
+        + ActiveFields []CardPos
+        + Units []*Unit
+        + S *Selector
+
+        - makeReadyUnits()
+
+        + SetAction(unit *Unit, pos TimePos)
+        + SubmitRound()
+        + ToBuffer() *bytes.Buffer
+        + Save(name string)
+        + MakeReadyUI()
+        + AddField(pos CardPos) *Field
+        + CopyField(toPos CardPos, fromField *Field) *Field
+        + Get(pos CardPos) (*Tile, *Field)
+        + Update()
+        + Draw(img *ebiten.Image, cam *util.Camera)
+        + GetUnitAtPos(pos TimePos) (int, *Unit)
+        + AddUnitAtTile(pos TimePos, fraction *Fraction) *Unit
+        + RemoveUnitAtTile(tile *Tile)
+        + RemoveUnitAtPos(pos TimePos)
+        + CopyUnit(unit *Unit) *Unit
+
+    }
+    Timeline --> "n" Unit
+    Timeline --> "n" Field
+    Timeline --> "1" Selector
+    Timeline --> math.CardPos
+
+
+     class TimePos << (S,Aquamarine) >> {
+        + TilePos AxialPos
+        + FieldPos CardPos
+        + FieldBounds CardPos
+
+        + SamePos(p2 TimePos) bool
+        + CalcPos() CardPos
+        + CalcTilePos() CardPos
+        + ToString() string
+
+    }
+    TimePos --> math.CardPos
+    TimePos --> math.AxialPos
+
     class Action << (S,Aquamarine) >> {
         + Kind int
         + Support int
@@ -181,56 +233,6 @@ namespace field {
         + Visable bool
 
     }
-    class TimePos << (S,Aquamarine) >> {
-        + TilePos AxialPos
-        + FieldPos CardPos
-        + FieldBounds CardPos
-
-        + SamePos(p2 TimePos) bool
-        + CalcPos() CardPos
-        + CalcTilePos() CardPos
-        + ToString() string
-
-    }
-    TimePos --> math.CardPos
-    TimePos --> math.AxialPos
-
-    class Timeline << (S,Aquamarine) >> {
-        - moveUnits []*Unit
-        - supportUnits []*Unit
-        - image *ebiten.Image
-        - fieldY float64
-
-        + FieldSize int
-        + FieldBounds CardPos
-        + Fields <font color=blue>map</font>[CardPos]*Field
-        + ActiveFields []CardPos
-        + Units []*Unit
-        + S *Selector
-
-        - makeReadyUnits() 
-
-        + SetAction(unit *Unit, pos TimePos) 
-        + SubmitRound() 
-        + ToBuffer() *bytes.Buffer
-        + Save(name string) 
-        + MakeReadyUI() 
-        + AddField(pos CardPos) *Field
-        + CopyField(toPos CardPos, fromField *Field) *Field
-        + Get(pos CardPos) (*Tile, *Field)
-        + Update() 
-        + Draw(img *ebiten.Image, cam *util.Camera) 
-        + GetUnitAtPos(pos TimePos) (int, *Unit)
-        + AddUnitAtTile(pos TimePos, fraction *Fraction) *Unit
-        + RemoveUnitAtTile(tile *Tile) 
-        + RemoveUnitAtPos(pos TimePos) 
-        + CopyUnit(unit *Unit) *Unit
-
-    }
-    Timeline --> "n" Unit
-    Timeline --> "n" Field
-    Timeline --> "1" Selector
-    Timeline --> math.CardPos
 
     class Unit << (S,Aquamarine) >> {
         + FactionId int
@@ -239,7 +241,7 @@ namespace field {
 
         - draw(img *ebiten.Image, fraction *Fraction)
     }
-    Unit --> "1" Action
+    Unit -> "1" Action
 
     class customColor << (S,Aquamarine) >> {
         - r uint32
@@ -248,7 +250,6 @@ namespace field {
         - a uint32
 
         + RGBA() uint32
-
     }
 
     class targetPos << (S,Aquamarine) >> {
@@ -258,9 +259,12 @@ namespace field {
     }
     targetPos --> "n" Unit
 
+    TimePos -[hidden] customColor
+    customColor -[hidden] Fraction
+
     TimePos *.. Action
     TimePos *.. Selector
-    TileSettings *.. Tile
+    TileSettings *. Tile
     TimePos *.. Tile
     MovePattern *.. Unit
     TimePos *.. Unit
