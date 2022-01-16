@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	//defer profile.Start().Stop()
+	// defer profile.Start().Stop()
 	core.Init()
 }

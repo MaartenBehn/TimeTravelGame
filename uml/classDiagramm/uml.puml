@@ -1,0 +1,482 @@
+@startuml
+namespace core {
+    class Game << (S,Aquamarine) >> {
+        - ui *ebitenui.UI
+
+        + Update() error
+        + Draw(screen *ebiten.Image) 
+        + Layout(outsideWidth int, outsideHeight int) (int, int)
+
+    }
+}
+
+
+namespace editor {
+    class editor << (S,Aquamarine) >> {
+        - t *field.Timeline
+        - cam *util.Camera
+        - mode int
+
+    }
+}
+
+
+namespace event {
+    class event << (S,Aquamarine) >> {
+        - id EventId
+        - receiver []<font color=blue>func</font>(<font color=blue>interface</font>{}) 
+
+    }
+    class event.EventId << (T, #FF7700) >>  {
+    }
+    class event.ReciverId << (T, #FF7700) >>  {
+    }
+}
+
+
+namespace field {
+    class Action << (S,Aquamarine) >> {
+        + Kind int
+        + Support int
+
+    }
+    class BasicMovePattern << (S,Aquamarine) >> {
+        + Stride int
+
+        + GetPositions(pos TimePos, t *Timeline) []TimePos
+
+    }
+    class Field << (S,Aquamarine) >> {
+        - image *ebiten.Image
+
+        + Size int
+        + Bounds CardPos
+        + Pos CardPos
+        + Tiles []Tile
+        + Active bool
+
+        - makeReadyUI() 
+
+        + GetAxial(pos AxialPos) *Tile
+        + GetCard(pos CardPos) *Tile
+        + Update() 
+        + Draw(img *ebiten.Image) 
+
+    }
+    class Fraction << (S,Aquamarine) >> {
+        - name string
+        - color color.Color
+        - colorLigth color.Color
+
+        + Images <font color=blue>map</font>[string]*ebiten.Image
+
+    }
+    interface MovePattern  {
+        + GetPositions(pos TimePos, t *Timeline) []TimePos
+
+    }
+    class Selector << (S,Aquamarine) >> {
+        - blinkVisible bool
+        - blinkTime float64
+
+        + Visible bool
+
+        + Draw(img *ebiten.Image, cam *util.Camera) 
+
+    }
+    class Tile << (S,Aquamarine) >> {
+        - vertices []ebiten.Vertex
+
+        - makeReadyUI() 
+        - draw(img *ebiten.Image, active bool) 
+
+    }
+    class TileSettings << (S,Aquamarine) >> {
+        + Visable bool
+
+    }
+    class TimePos << (S,Aquamarine) >> {
+        + TilePos AxialPos
+        + FieldPos CardPos
+        + FieldBounds CardPos
+
+        + SamePos(p2 TimePos) bool
+        + CalcPos() CardPos
+        + CalcTilePos() CardPos
+        + ToString() string
+
+    }
+    class Timeline << (S,Aquamarine) >> {
+        - moveUnits []*Unit
+        - supportUnits []*Unit
+        - image *ebiten.Image
+        - fieldY float64
+
+        + FieldSize int
+        + FieldBounds CardPos
+        + Fields <font color=blue>map</font>[CardPos]*Field
+        + ActiveFields []CardPos
+        + Units []*Unit
+        + S *Selector
+
+        - makeReadyUnits() 
+
+        + SetAction(unit *Unit, pos TimePos) 
+        + SubmitRound() 
+        + ToBuffer() *bytes.Buffer
+        + Save(name string) 
+        + MakeReadyUI() 
+        + AddField(pos CardPos) *Field
+        + CopyField(toPos CardPos, fromField *Field) *Field
+        + Get(pos CardPos) (*Tile, *Field)
+        + Update() 
+        + Draw(img *ebiten.Image, cam *util.Camera) 
+        + GetUnitAtPos(pos TimePos) (int, *Unit)
+        + AddUnitAtTile(pos TimePos, fraction *Fraction) *Unit
+        + RemoveUnitAtTile(tile *Tile) 
+        + RemoveUnitAtPos(pos TimePos) 
+        + CopyUnit(unit *Unit) *Unit
+
+    }
+    class Unit << (S,Aquamarine) >> {
+        + FactionId int
+        + Action Action
+        + Support int
+
+        - draw(img *ebiten.Image, fraction *Fraction) 
+
+    }
+    class customColor << (S,Aquamarine) >> {
+        - r uint32
+        - g uint32
+        - b uint32
+        - a uint32
+
+        + RGBA() uint32
+
+    }
+    class targetPos << (S,Aquamarine) >> {
+        - moveUnits []*Unit
+        - presentUnit *Unit
+        - winningUnit *Unit
+
+    }
+}
+"field.TimePos" *-- "field.Action"
+"field.TimePos" *-- "field.Selector"
+"field.TileSettings" *-- "field.Tile"
+"field.TimePos" *-- "field.Tile"
+"field.MovePattern" *-- "field.Unit"
+"field.TimePos" *-- "field.Unit"
+"field.TimePos" *-- "field.targetPos"
+
+"field.MovePattern" <|-- "field.BasicMovePattern"
+
+namespace game {
+    class AI0 << (S,Aquamarine) >> {
+        - update() 
+
+    }
+    class AI1 << (S,Aquamarine) >> {
+        - update() 
+
+    }
+    class AI2 << (S,Aquamarine) >> {
+        - update() 
+
+    }
+    class AI3 << (S,Aquamarine) >> {
+        - tries int
+
+        - update() 
+
+    }
+    class game << (S,Aquamarine) >> {
+        - t *field.Timeline
+        - cam *util.Camera
+        - done bool
+
+        - update() 
+        - draw(screen *ebiten.Image) 
+
+    }
+    class player << (S,Aquamarine) >> {
+        - update() 
+
+    }
+    interface user  {
+        - isPlayer() bool
+        - getScore() int
+        - evaluate() 
+        - update() 
+        - draw(screen *ebiten.Image) 
+
+    }
+    class userData << (S,Aquamarine) >> {
+        - player bool
+        - id int
+        - factionId int
+        - t *field.Timeline
+        - cam *util.Camera
+        - score int
+
+        - isPlayer() bool
+        - getScore() int
+        - draw(screen *ebiten.Image) 
+        - evaluate() 
+
+    }
+}
+"game.userData" *-- "game.AI0"
+"game.userData" *-- "game.AI1"
+"game.userData" *-- "game.AI2"
+"game.userData" *-- "game.AI3"
+"game.userData" *-- "game.player"
+
+
+namespace math {
+    class AxialPos << (S,Aquamarine) >> {
+        + Q float64
+        + R float64
+
+        + Add(b AxialPos) AxialPos
+        + Sub(b AxialPos) AxialPos
+        + Mul(b AxialPos) AxialPos
+        + MulFloat(b float64) AxialPos
+        + Div(b AxialPos) AxialPos
+        + DivFloat(b float64) AxialPos
+        + Trunc() AxialPos
+        + ToCube() CubePos
+        + ToCard() CardPos
+        + Distance(b AxialPos) float64
+        + Round() AxialPos
+        + MoveRange(r float64) []AxialPos
+
+    }
+    class CardPos << (S,Aquamarine) >> {
+        + X float64
+        + Y float64
+
+        + Add(b CardPos) CardPos
+        + AddFloat(b float64) CardPos
+        + Sub(b CardPos) CardPos
+        + SubFloat(b float64) CardPos
+        + Mul(b CardPos) CardPos
+        + MulFloat(b float64) CardPos
+        + Div(b CardPos) CardPos
+        + DivFloat(b float64) CardPos
+        + ToAxial() AxialPos
+
+    }
+    class CubePos << (S,Aquamarine) >> {
+        + X float64
+        + Y float64
+        + Z float64
+
+        + Add(b CubePos) CubePos
+        + AddFloat(b float64) CubePos
+        + Sub(b CubePos) CubePos
+        + Mul(b CubePos) CubePos
+        + MulFloat(b float64) CubePos
+        + Div(b CubePos) CubePos
+        + DivFloat(b float64) CubePos
+        + ToAxial() AxialPos
+        + Distance(b CubePos) float64
+        + GetLine(b CubePos) []CubePos
+        + MoveRange(r float64) []CubePos
+        + Round() CubePos
+        + Lerp(b CubePos, t float64) CubePos
+
+    }
+}
+
+
+namespace ui {
+    class buttonResources << (S,Aquamarine) >> {
+        - image *widget.ButtonImage
+        - text *widget.ButtonTextColor
+        - face font.Face
+        - padding widget.Insets
+
+    }
+    class checkboxResources << (S,Aquamarine) >> {
+        - image *widget.ButtonImage
+        - graphic *widget.CheckboxGraphicImage
+        - spacing int
+
+    }
+    class comboButtonResources << (S,Aquamarine) >> {
+        - image *widget.ButtonImage
+        - text *widget.ButtonTextColor
+        - face font.Face
+        - graphic *widget.ButtonImageImage
+        - padding widget.Insets
+
+    }
+    class dragContents << (S,Aquamarine) >> {
+        - res *uiResources
+        - sources []*widget.Widget
+        - targets []*widget.Widget
+        - text *widget.Text
+
+        - addSource(s widget.HasWidget) 
+        - addTarget(t widget.HasWidget) 
+        - isSource(w *widget.Widget) bool
+        - isTarget(w *widget.Widget) bool
+
+        + Create(srcWidget widget.HasWidget, srcX int, srcY int) (widget.DragWidget, <font color=blue>interface</font>{})
+        + Update(target widget.HasWidget, _ int, _ int, _ <font color=blue>interface</font>{}) 
+
+    }
+    class headerResources << (S,Aquamarine) >> {
+        - background *image.NineSlice
+        - padding widget.Insets
+        - face font.Face
+        - color color.Color
+
+    }
+    class labelResources << (S,Aquamarine) >> {
+        - text *widget.LabelColor
+        - face font.Face
+
+    }
+    class listResources << (S,Aquamarine) >> {
+        - image *widget.ScrollContainerImage
+        - track *widget.SliderTrackImage
+        - trackPadding widget.Insets
+        - handle *widget.ButtonImage
+        - handleSize int
+        - face font.Face
+        - entry *widget.ListEntryColor
+        - entryPadding widget.Insets
+
+    }
+    class panelResources << (S,Aquamarine) >> {
+        - image *image.NineSlice
+        - padding widget.Insets
+
+    }
+    class sliderResources << (S,Aquamarine) >> {
+        - trackImage *widget.SliderTrackImage
+        - handle *widget.ButtonImage
+        - handleSize int
+
+    }
+    class tabBookResources << (S,Aquamarine) >> {
+        - idleButton *widget.ButtonImage
+        - selectedButton *widget.ButtonImage
+        - buttonFace font.Face
+        - buttonText *widget.ButtonTextColor
+        - buttonPadding widget.Insets
+
+    }
+    class textInputResources << (S,Aquamarine) >> {
+        - image *widget.TextInputImage
+        - padding widget.Insets
+        - face font.Face
+        - color *widget.TextInputColor
+
+    }
+    class textResources << (S,Aquamarine) >> {
+        - idleColor color.Color
+        - disabledColor color.Color
+        - face font.Face
+        - titleFace font.Face
+        - bigTitleFace font.Face
+        - smallFace font.Face
+
+    }
+    class toolTipContents << (S,Aquamarine) >> {
+        - tips <font color=blue>map</font>[widget.HasWidget]string
+        - widgetsWithTime []widget.HasWidget
+        - showTime bool
+        - res *uiResources
+        - text *widget.TextToolTip
+        - timeText *widget.TextToolTip
+
+        - canShowTime(w widget.HasWidget) bool
+
+        + Create(w widget.HasWidget) widget.ToolTipWidget
+        + Set(w widget.HasWidget, s string) 
+        + Update(w widget.HasWidget) 
+
+    }
+    class toolTipResources << (S,Aquamarine) >> {
+        - background *image.NineSlice
+        - padding widget.Insets
+        - face font.Face
+        - color color.Color
+
+    }
+    class uiResources << (S,Aquamarine) >> {
+        - fonts *util.Font
+        - background *image.NineSlice
+        - separatorColor color.Color
+        - text *textResources
+        - button *buttonResources
+        - label *labelResources
+        - checkbox *checkboxResources
+        - comboButton *comboButtonResources
+        - list *listResources
+        - slider *sliderResources
+        - panel *panelResources
+        - tabBook *tabBookResources
+        - header *headerResources
+        - textInput *textInputResources
+        - toolTip *toolTipResources
+
+        - close() 
+
+    }
+}
+
+
+namespace util {
+    class Camera << (S,Aquamarine) >> {
+        - pos CardPos
+        - minPos CardPos
+        - maxPos CardPos
+        - scale CardPos
+        - minScale CardPos
+        - maxScale CardPos
+        - rotation float64
+        - matrix *ebiten.GeoM
+
+        - updateMatrix() 
+        - bounds() 
+        - updateInput() 
+
+        + GetMatrix() *ebiten.GeoM
+
+    }
+    class Font << (S,Aquamarine) >> {
+        + Face font.Face
+        + TitleFace font.Face
+        + BigTitleFace font.Face
+        + ToolTipFace font.Face
+
+        + Close() 
+
+    }
+    class Page << (S,Aquamarine) >> {
+        - loaded bool
+        - loadEventId event.EventId
+        - unloadEventId event.EventId
+        - loadId event.ReciverId
+        - unloadId event.ReciverId
+        - updateId event.ReciverId
+        - drawId event.ReciverId
+
+        + Init(loadEventId event.EventId, unloadEventId event.EventId) 
+        + Load(data <font color=blue>interface</font>{}) 
+        + Unload(data <font color=blue>interface</font>{}) 
+        + Update() 
+        + Draw(screen *ebiten.Image) 
+
+    }
+}
+
+
+"__builtin__.int" #.. "event.EventId"
+"__builtin__.int" #.. "event.ReciverId"
+@enduml

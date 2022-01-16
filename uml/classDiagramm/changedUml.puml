@@ -1,0 +1,379 @@
+@startuml
+namespace core {
+    class Game << (S,Aquamarine) >> {
+        - ui *ebitenui.UI
+
+        + Update() error
+        + Draw(screen *ebiten.Image)
+        + Layout(outsideWidth int, outsideHeight int) (int, int)
+
+    }
+
+}
+
+namespace event {
+    class event << (S,Aquamarine) >> {
+        - id EventId
+        - receiver []<font color=blue>func</font>(<font color=blue>interface</font>{})
+    }
+    class event.EventId << (T, #FF7700) >>  {
+    }
+    class event.ReciverId << (T, #FF7700) >>  {
+    }
+}
+
+event.event <-- editor.editor :EventSystem
+event.event <-- game.game :EventSystem
+event.event <-- core.Game :EventSystem
+event.event <-- ui.Page :EventSystem
+
+namespace editor {
+    class editor << (S,Aquamarine) >> {
+        - t *field.Timeline
+        - cam *util.Camera
+        - mode int
+
+    }
+    editor --> "1" field.Timeline : ptr
+    editor --> "1" util.Camera : ptr
+
+}
+
+namespace game {
+    class AI0 << (S,Aquamarine) >> {
+        - update()
+    }
+
+    class AI1 << (S,Aquamarine) >> {
+        - update()
+
+    }
+    class AI2 << (S,Aquamarine) >> {
+        - update()
+
+    }
+    class AI3 << (S,Aquamarine) >> {
+        - tries int
+
+        - update()
+
+    }
+    class game << (S,Aquamarine) >> {
+        - t *field.Timeline
+        - cam *util.Camera
+        - done bool
+
+        - update()
+        - draw(screen *ebiten.Image)
+
+    }
+    game --> "1" field.Timeline : ptr
+    game --> "1" util.Camera : ptr
+
+    class player << (S,Aquamarine) >> {
+        - update()
+
+    }
+
+    interface user  {
+        - isPlayer() bool
+        - getScore() int
+        - evaluate()
+        - update()
+        - draw(screen *ebiten.Image)
+
+    }
+    class userData << (S,Aquamarine) >> {
+        - player bool
+        - id int
+        - factionId int
+        - t *field.Timeline
+        - cam *util.Camera
+        - score int
+
+        - isPlayer() bool
+        - getScore() int
+        - draw(screen *ebiten.Image)
+        - evaluate()
+    }
+    userData --> "1" field.Timeline : ptr
+    userData --> "1" util.Camera : ptr
+
+
+    "userData" *.. "AI0"
+    "userData" *.. "AI1"
+    "userData" *.. "AI2"
+    "userData" *.. "AI3"
+    "userData" *.. "player"
+
+    "user" <|.. "AI0"
+    "user" <|.. "AI1"
+    "user" <|.. "AI2"
+    "user" <|.. "AI3"
+    "user" <|.. "player"
+}
+
+
+
+namespace field {
+    class Action << (S,Aquamarine) >> {
+        + Kind int
+        + Support int
+
+    }
+    class BasicMovePattern << (S,Aquamarine) >> {
+        + Stride int
+
+        + GetPositions(pos TimePos, t *Timeline) []TimePos
+
+    }
+    class Field << (S,Aquamarine) >> {
+        - image *ebiten.Image
+
+        + Size int
+        + Bounds CardPos
+        + Pos CardPos
+        + Tiles []Tile
+        + Active bool
+
+        - makeReadyUI() 
+
+        + GetAxial(pos AxialPos) *Tile
+        + GetCard(pos CardPos) *Tile
+        + Update() 
+        + Draw(img *ebiten.Image) 
+
+    }
+    Field --> "n" Tile
+    Field --> math.CardPos
+
+    class Fraction << (S,Aquamarine) >> {
+        - name string
+        - color color.Color
+        - colorLigth color.Color
+
+        + Images <font color=blue>map</font>[string]*ebiten.Image
+
+    }
+
+    interface MovePattern  {
+        + GetPositions(pos TimePos, t *Timeline) []TimePos
+
+    }
+    class Selector << (S,Aquamarine) >> {
+        - blinkVisible bool
+        - blinkTime float64
+
+        + Visible bool
+
+        + Draw(img *ebiten.Image, cam *util.Camera) 
+
+    }
+    class Tile << (S,Aquamarine) >> {
+        - vertices []ebiten.Vertex
+
+        - makeReadyUI() 
+        - draw(img *ebiten.Image, active bool)
+    }
+
+
+    class TileSettings << (S,Aquamarine) >> {
+        + Visable bool
+
+    }
+    class TimePos << (S,Aquamarine) >> {
+        + TilePos AxialPos
+        + FieldPos CardPos
+        + FieldBounds CardPos
+
+        + SamePos(p2 TimePos) bool
+        + CalcPos() CardPos
+        + CalcTilePos() CardPos
+        + ToString() string
+
+    }
+    TimePos --> math.CardPos
+    TimePos --> math.AxialPos
+
+    class Timeline << (S,Aquamarine) >> {
+        - moveUnits []*Unit
+        - supportUnits []*Unit
+        - image *ebiten.Image
+        - fieldY float64
+
+        + FieldSize int
+        + FieldBounds CardPos
+        + Fields <font color=blue>map</font>[CardPos]*Field
+        + ActiveFields []CardPos
+        + Units []*Unit
+        + S *Selector
+
+        - makeReadyUnits() 
+
+        + SetAction(unit *Unit, pos TimePos) 
+        + SubmitRound() 
+        + ToBuffer() *bytes.Buffer
+        + Save(name string) 
+        + MakeReadyUI() 
+        + AddField(pos CardPos) *Field
+        + CopyField(toPos CardPos, fromField *Field) *Field
+        + Get(pos CardPos) (*Tile, *Field)
+        + Update() 
+        + Draw(img *ebiten.Image, cam *util.Camera) 
+        + GetUnitAtPos(pos TimePos) (int, *Unit)
+        + AddUnitAtTile(pos TimePos, fraction *Fraction) *Unit
+        + RemoveUnitAtTile(tile *Tile) 
+        + RemoveUnitAtPos(pos TimePos) 
+        + CopyUnit(unit *Unit) *Unit
+
+    }
+    Timeline --> "n" Unit
+    Timeline --> "n" Field
+    Timeline --> "1" Selector
+    Timeline --> math.CardPos
+
+    class Unit << (S,Aquamarine) >> {
+        + FactionId int
+        + Action Action
+        + Support int
+
+        - draw(img *ebiten.Image, fraction *Fraction)
+    }
+    Unit --> "1" Action
+
+    class customColor << (S,Aquamarine) >> {
+        - r uint32
+        - g uint32
+        - b uint32
+        - a uint32
+
+        + RGBA() uint32
+
+    }
+
+    class targetPos << (S,Aquamarine) >> {
+        - moveUnits []*Unit
+        - presentUnit *Unit
+        - winningUnit *Unit
+    }
+    targetPos --> "n" Unit
+
+    TimePos *.. Action
+    TimePos *.. Selector
+    TileSettings *.. Tile
+    TimePos *.. Tile
+    MovePattern *.. Unit
+    TimePos *.. Unit
+    TimePos *.. targetPos
+    MovePattern <|.. BasicMovePattern
+}
+
+namespace math {
+    class AxialPos << (S,Aquamarine) >> {
+        + Q float64
+        + R float64
+
+        + Add(b AxialPos) AxialPos
+        + Sub(b AxialPos) AxialPos
+        + Mul(b AxialPos) AxialPos
+        + MulFloat(b float64) AxialPos
+        + Div(b AxialPos) AxialPos
+        + DivFloat(b float64) AxialPos
+        + Trunc() AxialPos
+        + ToCube() CubePos
+        + ToCard() CardPos
+        + Distance(b AxialPos) float64
+        + Round() AxialPos
+        + MoveRange(r float64) []AxialPos
+
+    }
+    class CardPos << (S,Aquamarine) >> {
+        + X float64
+        + Y float64
+
+        + Add(b CardPos) CardPos
+        + AddFloat(b float64) CardPos
+        + Sub(b CardPos) CardPos
+        + SubFloat(b float64) CardPos
+        + Mul(b CardPos) CardPos
+        + MulFloat(b float64) CardPos
+        + Div(b CardPos) CardPos
+        + DivFloat(b float64) CardPos
+        + ToAxial() AxialPos
+
+    }
+    class CubePos << (S,Aquamarine) >> {
+        + X float64
+        + Y float64
+        + Z float64
+
+        + Add(b CubePos) CubePos
+        + AddFloat(b float64) CubePos
+        + Sub(b CubePos) CubePos
+        + Mul(b CubePos) CubePos
+        + MulFloat(b float64) CubePos
+        + Div(b CubePos) CubePos
+        + DivFloat(b float64) CubePos
+        + ToAxial() AxialPos
+        + Distance(b CubePos) float64
+        + GetLine(b CubePos) []CubePos
+        + MoveRange(r float64) []CubePos
+        + Round() CubePos
+        + Lerp(b CubePos, t float64) CubePos
+    }
+}
+
+namespace util {
+    class Camera << (S,Aquamarine) >> {
+        - pos CardPos
+        - minPos CardPos
+        - maxPos CardPos
+        - scale CardPos
+        - minScale CardPos
+        - maxScale CardPos
+        - rotation float64
+        - matrix *ebiten.GeoM
+
+        - updateMatrix() 
+        - bounds() 
+        - updateInput() 
+
+        + GetMatrix() *ebiten.GeoM
+
+    }
+    Camera --> math.CardPos
+
+    class Font << (S,Aquamarine) >> {
+        + Face font.Face
+        + TitleFace font.Face
+        + BigTitleFace font.Face
+        + ToolTipFace font.Face
+
+        + Close() 
+
+    }
+
+
+}
+
+namespace ui {
+    class Page << (S,Aquamarine) >> {
+        - loaded bool
+        - loadEventId event.EventId
+        - unloadEventId event.EventId
+        - loadId event.ReciverId
+        - unloadId event.ReciverId
+        - updateId event.ReciverId
+        - drawId event.ReciverId
+
+        + Init(loadEventId event.EventId, unloadEventId event.EventId)
+        + Load(data <font color=blue>interface</font>{})
+        + Unload(data <font color=blue>interface</font>{})
+        + Update()
+        + Draw(screen *ebiten.Image)
+    }
+}
+
+"__builtin__.int" <|.. "event.EventId"
+"__builtin__.int" <|.. "event.ReciverId"
+@enduml

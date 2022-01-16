@@ -1,0 +1,238 @@
+@startuml
+namespace core {
+    class "g:Game" << (S,Aquamarine) >> {
+    }
+
+    "g:Game" "editor" <-- "editor.e:editor"
+    "g:Game" "game" <-- "game.g:game"
+}
+
+namespace editor {
+    class "e:editor" << (S,Aquamarine) >> {
+        mode = 1
+    }
+     "e:editor" "t" <-- "field.t:Timeline"
+     "e:editor" "cam" <-- "util.cam:Camera"
+}
+
+namespace game {
+    class "g:game" << (S,Aquamarine) >> {
+       done = false
+    }
+    "g:game" "t" <-- "field.t:Timeline"
+    "g:game" "cam" <-- "util.cam:Camera"
+    "g:game" "player" <-- "player:player"
+    "g:game" "ai" <-- "AI:AI3"
+
+    class "AI:AI3" << (S,Aquamarine) >> {
+        tries = 10000
+    }
+    "AI:AI3" "aiData" <-- "ai:userData"
+    "player:player" "playerData" <-- "player:userData"
+
+    class "player:player" << (S,Aquamarine) >> {
+    }
+
+    class "player:userData" << (S,Aquamarine) >> {
+        player = true
+        id = 0
+        factionId = 0
+        score = 0
+    }
+    "player:userData" "t" <-- "field.t:Timeline"
+    "player:userData" "cam" <-- "util.cam:Camera"
+
+     class "ai:userData" << (S,Aquamarine) >> {
+        player = false
+        id = 1
+        factionId = 1
+        score = 0
+    }
+    "ai:userData" "t" <-- "field.t:Timeline"
+    "ai:userData" "cam" <-- "util.cam:Camera"
+
+}
+
+namespace field {
+    class ActionStay:Action << (S,Aquamarine) >> {
+        Kind = 0
+        Support = 0
+    }
+
+    class Pattern:BasicMovePattern << (S,Aquamarine) >> {
+        Stride = 1
+    }
+
+    class Field0:Field << (S,Aquamarine) >> {
+        Size = 4
+        Active = true
+    }
+    "Field0:Field" "Tiles" <-- "Tiles:Tile"
+    "Field0:Field" "Pos" <-- "math.FieldPos:CardPos"
+    "Field0:Field" "Bounds" <-- "math.FieldBounds:CardPos"
+
+    class "Red:Fraction" << (S,Aquamarine) >> {
+        name = red
+    }
+    "Red:Fraction" "Red" <-- "red:customColor"
+    "Red:Fraction" "Red ligth" <-- "redLigth:customColor"
+
+     class "Blue:Fraction" << (S,Aquamarine) >> {
+        name = red
+     }
+     "Blue:Fraction" "Blue" <-- "blue:customColor"
+     "Blue:Fraction" "Blue ligth" <-- "blueLigth:customColor"
+
+    class red:customColor << (S,Aquamarine) >> {
+        r = 255
+        g = 0
+        b = 0
+        a = 255
+    }
+
+    class redLigth:customColor << (S,Aquamarine) >> {
+        r = 155
+        g = 0
+        b = 0
+        a = 255
+    }
+
+    class blue:customColor << (S,Aquamarine) >> {
+        r = 0
+        g = 0
+        b = 255
+        a = 255
+    }
+
+    class blueLigth:customColor << (S,Aquamarine) >> {
+        r = 0
+        g = 0
+        b = 155
+        a = 255
+    }
+
+    class "S:Selector" << (S,Aquamarine) >> {
+        blinkVisible = true
+        blinkTime = 1f
+        Visible =  true
+    }
+    "S:Selector" "pos" <-- "pos:TimePos"
+
+    class "Tiles:Tile" << (S,Aquamarine) >> {
+    }
+    "Tiles:Tile" "settings" <-- "settings:TileSettings"
+    "Tiles:Tile" "pos" <-- "pos:TimePos"
+
+    class "settings:TileSettings" << (S,Aquamarine) >> {
+        Visable = true
+    }
+
+    class "pos:TimePos" << (S,Aquamarine) >> {
+    }
+    "pos:TimePos" "TilePos" <-- "math.TilePos:AxialPos"
+    "pos:TimePos" "FieldPos" <-- "math.FieldPos:CardPos"
+    "pos:TimePos" "FieldPos" <-- "math.FieldBounds:CardPos"
+
+    class t:Timeline << (S,Aquamarine) >> {
+        fieldY = 0f
+        FieldSize = 4
+    }
+
+    "t:Timeline" "Units" <-- "RedUnits:Unit"
+    "t:Timeline" "Units" <-- "BlueUnits:Unit"
+    "t:Timeline" "Fields" <-- "Field0:Field"
+    "t:Timeline" "S" <-- "S:Selector"
+    "t:Timeline" "FieldBounds" <-- "math.FieldBounds:CardPos"
+
+    class RedUnits:Unit << (S,Aquamarine) >> {
+        FactionId = 0
+        Support = 0
+    }
+    "RedUnits:Unit" "Action" <-- "ActionStay:Action"
+    "RedUnits:Unit" "Pattern" <-- "Pattern:BasicMovePattern"
+    "RedUnits:Unit" "Fraction" <-- "Red:Fraction"
+    "RedUnits:Unit" "pos" <-- "pos:TimePos"
+
+
+    class BlueUnits:Unit << (S,Aquamarine) >> {
+            FactionId = 1
+            Support = 0
+    }
+    "BlueUnits:Unit" "Action" <-- "ActionStay:Action"
+    "BlueUnits:Unit" "Pattern" <-- "Pattern:BasicMovePattern"
+    "BlueUnits:Unit" "Fraction" <-- "Blue:Fraction"
+    "BlueUnits:Unit" "pos" <-- "pos:TimePos"
+
+}
+
+namespace math {
+    class "TilePos:AxialPos" << (S,Aquamarine) >> {
+        Q = n
+        R = n
+    }
+
+    class "FieldPos:CardPos" << (S,Aquamarine) >> {
+        X = n
+        Y = n
+    }
+
+    class "FieldBounds:CardPos" << (S,Aquamarine) >> {
+        X = 10
+        Y = 10
+    }
+
+    class "camPos:CardPos" << (S,Aquamarine) >> {
+        X = n
+        Y = n
+    }
+    class "camMaxPos:CardPos" << (S,Aquamarine) >> {
+        X = 100
+        Y = 100
+    }
+    class "camMinPos:CardPos" << (S,Aquamarine) >> {
+        X = 0
+        Y = 0
+    }
+    class "camScale:CardPos" << (S,Aquamarine) >> {
+        X = n
+        Y = n
+    }
+    class "camMaxScale:CardPos" << (S,Aquamarine) >> {
+        X = 0.01
+        Y = 0.01
+    }
+    class "camMinScale:CardPos" << (S,Aquamarine) >> {
+        X = 10
+        Y = 10
+    }
+}
+
+namespace util {
+    class "cam:Camera" << (S,Aquamarine) >> {
+        rotation float64
+    }
+    "cam:Camera" "Pos" <-- "math.camPos:CardPos"
+    "cam:Camera" "MaxPos" <-- "math.camMaxPos:CardPos"
+    "cam:Camera" "MinPos" <-- "math.camMinPos:CardPos"
+    "cam:Camera" "Scale" <-- "math.camScale:CardPos"
+    "cam:Camera" "MaxScale" <-- "math.camMaxScale:CardPos"
+    "cam:Camera" "MinScale" <-- "math.camMinScale:CardPos"
+}
+
+namespace ui {
+    class "start:Page" << (S,Aquamarine) >> {
+        loaded = false
+    }
+    "core.g:Game" "startPage" <-- "start:Page"
+
+    class "game:Page" << (S,Aquamarine) >> {
+        loaded = true
+    }
+    "game.g:game" "gamePage" <-- "game:Page"
+
+    class "editor:Page" << (S,Aquamarine) >> {
+       loaded = false
+    }
+    "editor.e:editor" "editorPage" <-- "editor:Page"
+}
+@enduml
