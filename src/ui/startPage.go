@@ -11,7 +11,8 @@ func createStartPage(res *uiResources, ui func() *ebitenui.UI) widget.PreferredS
 	c := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(5)),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(20)),
+			widget.RowLayoutOpts.Spacing(10),
 		)),
 	)
 

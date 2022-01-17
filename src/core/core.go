@@ -7,6 +7,7 @@ import (
 	gameMap "github.com/Stroby241/TimeTravelGame/src/field"
 	"github.com/Stroby241/TimeTravelGame/src/game"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
+	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/blizzy78/ebitenui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -60,8 +61,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.ui.Draw(screen)
 
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f\n",
-		ebiten.CurrentTPS(), ebiten.CurrentFPS()))
+	if util.Debug {
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %.02f\nFPS: %.02f\n",
+			ebiten.CurrentTPS(), ebiten.CurrentFPS()))
+	}
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return outsideWidth, outsideHeight
