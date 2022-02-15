@@ -11,13 +11,24 @@ type player struct {
 	userData
 }
 
-func NewPlayer(id int, factionId int, t *field.Timeline, cam *util.Camera) *player {
+func NewPlayer(factionId int, t *field.Timeline) *player {
 	return &player{
-		userData: NewUserData(true, id, factionId, t, cam),
+		userData: NewUserData(
+			true,
+			factionId,
+			t,
+			util.NewCamera(
+				CardPos{0, 0},
+				CardPos{50000, 50000},
+				CardPos{1, 1},
+				CardPos{10, 10},
+				factionId)),
 	}
 }
 
 func (p *player) update() {
+	p.cam.UpdateInput()
+
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 

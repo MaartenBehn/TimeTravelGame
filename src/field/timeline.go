@@ -25,7 +25,8 @@ type Timeline struct {
 
 	S *Selector
 
-	image *ebiten.Image
+	image      *ebiten.Image
+	arrowImage *ebiten.Image
 
 	fieldY float64
 }
@@ -129,10 +130,13 @@ func (t *Timeline) Update() {
 
 	if t.image == nil {
 		t.image = ebiten.NewImage(int(size.X), int(size.Y))
+		t.arrowImage = ebiten.NewImage(int(size.X), int(size.Y))
 	} else if w, h := t.image.Size(); w != int(size.X) || h != int(size.Y) {
 		t.image = ebiten.NewImage(int(size.X), int(size.Y))
+		t.arrowImage = ebiten.NewImage(int(size.X), int(size.Y))
 	} else {
 		t.image.Clear()
+		t.arrowImage.Clear()
 	}
 
 	// Draw Field
@@ -143,15 +147,17 @@ func (t *Timeline) Update() {
 
 	// Draw Units
 	for _, unit := range t.Units {
-		unit.draw(t.image, &Fractions[unit.FactionId])
+		unit.draw(t.image, &util.Fractions[unit.FactionId])
 	}
-
-	_, selectedUnit := t.GetUnitAtPos(t.S.TimePos)
 
 	// Draw Arrows
 	for _, unit := range t.Units {
+		if t.Fields[unit.FieldPos].Active {
+			continue
+		}
+
 		if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
-			DrawArrow(unit.CalcPos(), unit.Action.CalcPos(), t.image, &Fractions[unit.FactionId], selectedUnit == unit)
+			DrawArrow(unit.CalcPos(), unit.Action.CalcPos(), t.image, &util.Fractions[unit.FactionId], false)
 		}
 	}
 }
@@ -160,6 +166,21 @@ func (t *Timeline) Draw(img *ebiten.Image, cam *util.Camera) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM = *cam.GetMatrix()
 	img.DrawImage(t.image, op)
+
+	t.arrowImage.Clear()
+	_, selectedUnit := t.GetUnitAtPos(t.S.TimePos)
+	// Draw Arrows
+	for _, unit := range t.Units {
+		if (unit.FactionId != cam.GetFractionId() && cam.GetFractionId() != -1) || !t.Fields[unit.FieldPos].Active {
+			continue
+		}
+
+		if unit.Action.Kind == actionMove || unit.Action.Kind == actionSupport {
+			DrawArrow(unit.CalcPos(), unit.Action.CalcPos(), t.arrowImage, &util.Fractions[unit.FactionId], selectedUnit == unit)
+		}
+	}
+	img.DrawImage(t.arrowImage, op)
+
 	t.S.Draw(img, cam)
 
 	// Debug

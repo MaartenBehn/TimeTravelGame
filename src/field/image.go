@@ -2,6 +2,7 @@ package field
 
 import (
 	"encoding/gob"
+	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
@@ -55,9 +56,9 @@ func Init() {
 	tileImgae, _, err = ebitenutil.NewImageFromFile("res/sprites/tile.png")
 	checkErr(err)
 
-	for i, fraction := range Fractions {
-		r, g, b, a := fraction.color.RGBA()
-		fraction.colorLigth = customColor{r, g, b, a / 2}
+	for i, fraction := range util.Fractions {
+		r, g, b, a := fraction.Color.RGBA()
+		fraction.ColorLigth = customColor{r, g, b, a / 2}
 
 		op := &ebiten.DrawImageOptions{
 			CompositeMode: ebiten.CompositeModeDestinationIn,
@@ -82,27 +83,27 @@ func Init() {
 		arrowEndImg := ebiten.NewImage(w, h)
 		arrowEndImgL := ebiten.NewImage(w, h)
 
-		unitImg.Fill(fraction.color)
+		unitImg.Fill(fraction.Color)
 		unitImg.DrawImage(unitImgMask, op)
 
-		arrowTipImg.Fill(fraction.color)
+		arrowTipImg.Fill(fraction.Color)
 		arrowTipImg.DrawImage(arrowTipImgMask, op)
-		arrowTipImgL.Fill(fraction.colorLigth)
+		arrowTipImgL.Fill(fraction.ColorLigth)
 		arrowTipImgL.DrawImage(arrowTipImgMask, op)
 
-		arrowStraigthImg.Fill(fraction.color)
+		arrowStraigthImg.Fill(fraction.Color)
 		arrowStraigthImg.DrawImage(arrowStraigthImgMask, op)
-		arrowStraigthImgL.Fill(fraction.colorLigth)
+		arrowStraigthImgL.Fill(fraction.ColorLigth)
 		arrowStraigthImgL.DrawImage(arrowStraigthImgMask, op)
 
-		arrowCornerImg.Fill(fraction.color)
+		arrowCornerImg.Fill(fraction.Color)
 		arrowCornerImg.DrawImage(arrowCornerImgMask, op)
-		arrowCornerImgL.Fill(fraction.colorLigth)
+		arrowCornerImgL.Fill(fraction.ColorLigth)
 		arrowCornerImgL.DrawImage(arrowCornerImgMask, op)
 
-		arrowEndImg.Fill(fraction.color)
+		arrowEndImg.Fill(fraction.Color)
 		arrowEndImg.DrawImage(arrowEndImgMask, op)
-		arrowEndImgL.Fill(fraction.colorLigth)
+		arrowEndImgL.Fill(fraction.ColorLigth)
 		arrowEndImgL.DrawImage(arrowEndImgMask, op)
 
 		fraction.Images = map[string]*ebiten.Image{}
@@ -119,6 +120,6 @@ func Init() {
 		fraction.Images["arrow_end"] = arrowEndImg
 		fraction.Images["arrow_end_ligth"] = arrowEndImgL
 
-		Fractions[i] = fraction
+		util.Fractions[i] = fraction
 	}
 }

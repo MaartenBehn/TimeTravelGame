@@ -13,10 +13,12 @@ const (
 	EventEditorUILoadMap EventId = 14
 	EventEditorUISetMode EventId = 15
 
-	EventGameLoad          EventId = 20
-	EventGameUnload        EventId = 21
-	EventGameUISubmitRound EventId = 22
-	EventGameSubmitUser    EventId = 23
+	EventGameLoad        EventId = 20
+	EventGameUnload      EventId = 21
+	EventGameUISubmit    EventId = 22
+	EventGameSubmitUser  EventId = 23
+	EventGameCurrentUser EventId = 24
+	EventGameWon         EventId = 25
 
 	eventMax = 255
 )

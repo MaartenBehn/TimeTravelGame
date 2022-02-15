@@ -22,7 +22,7 @@ type editor struct {
 func load(data interface{}) {
 	e := &editor{
 		t:    nil,
-		cam:  util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}),
+		cam:  util.NewCamera(CardPos{0, 0}, CardPos{500, 500}, CardPos{1, 1}, CardPos{10, 10}, -1),
 		mode: 0,
 	}
 
@@ -64,6 +64,8 @@ func load(data interface{}) {
 }
 
 func update(e *editor) {
+	e.cam.UpdateInput()
+
 	mouseX, mouseY := ebiten.CursorPosition()
 	mouse := CardPos{X: float64(mouseX), Y: float64(mouseY)}
 
@@ -87,9 +89,9 @@ func update(e *editor) {
 		if e.mode == 0 {
 			tile.Visable = true
 		} else if e.mode == 1 && tile.Visable {
-			e.t.AddUnitAtTile(tile.TimePos, &field.Fractions[1])
+			e.t.AddUnitAtTile(tile.TimePos, &util.Fractions[1])
 		} else if e.mode == 2 {
-			e.t.AddUnitAtTile(tile.TimePos, &field.Fractions[0])
+			e.t.AddUnitAtTile(tile.TimePos, &util.Fractions[0])
 		} else if e.mode == 3 && tile.Visable {
 			_, unit := e.t.GetUnitAtPos(tile.TimePos)
 			if unit != nil {

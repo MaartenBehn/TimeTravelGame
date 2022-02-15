@@ -1,7 +1,6 @@
 package util
 
 import (
-	"github.com/Stroby241/TimeTravelGame/src/event"
 	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -17,9 +16,11 @@ type Camera struct {
 
 	rotation float64
 	matrix   *ebiten.GeoM
+
+	fractionId int
 }
 
-func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPos) *Camera {
+func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPos, fraction int) *Camera {
 	cam := &Camera{
 
 		pos:    CardPos{0, 0},
@@ -32,17 +33,20 @@ func NewCamera(minPos CardPos, maxPos CardPos, minScale CardPos, maxScale CardPo
 
 		rotation: 0,
 		matrix:   &ebiten.GeoM{},
+
+		fractionId: fraction,
 	}
 	cam.updateMatrix()
 
-	event.On(event.EventUpdate, func(data interface{}) {
-		cam.updateInput()
-	})
 	return cam
 }
 
 func (c *Camera) GetMatrix() *ebiten.GeoM {
 	return c.matrix
+}
+
+func (c *Camera) GetFractionId() int {
+	return c.fractionId
 }
 
 // Updates Cam.matrix
@@ -81,7 +85,7 @@ func (c *Camera) bounds() {
 }
 
 // Applies user Input to Cam
-func (c *Camera) updateInput() {
+func (c *Camera) UpdateInput() {
 
 	needMatrixUpdate := false
 	if ebiten.IsKeyPressed(ebiten.KeyW) {

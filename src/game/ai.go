@@ -16,10 +16,12 @@ type AI0 struct {
 
 func NewAI0(id int, factionId int, t *field.Timeline, cam *util.Camera) *AI0 {
 	return &AI0{
-		userData: NewUserData(false, id, factionId, t, cam),
+		userData: NewUserData(false, factionId, t, cam),
 	}
 }
 func (ai *AI0) update() {
+	ai.cam.UpdateInput()
+
 	for _, unit := range ai.t.Units {
 		if unit.FactionId == ai.factionId {
 			isAktive := false
@@ -45,16 +47,16 @@ func (ai *AI0) update() {
 		}
 	}
 
-	event.Go(event.EventGameSubmitUser, ai.id)
+	event.Go(event.EventGameSubmitUser, ai.factionId)
 }
 
 type AI1 struct {
 	userData
 }
 
-func NewAI1(id int, factionId int, t *field.Timeline, cam *util.Camera) *AI1 {
+func NewAI1(factionId int, t *field.Timeline, cam *util.Camera) *AI1 {
 	return &AI1{
-		userData: NewUserData(false, id, factionId, t, cam),
+		userData: NewUserData(false, factionId, t, cam),
 	}
 }
 func (ai *AI1) update() {
@@ -87,16 +89,16 @@ func (ai *AI1) update() {
 		}
 	}
 
-	event.Go(event.EventGameSubmitUser, ai.id)
+	event.Go(event.EventGameSubmitUser, ai.factionId)
 }
 
 type AI2 struct {
 	userData
 }
 
-func NewAI2(id int, factionId int, t *field.Timeline, cam *util.Camera) *AI2 {
+func NewAI2(factionId int, t *field.Timeline, cam *util.Camera) *AI2 {
 	return &AI2{
-		userData: NewUserData(false, id, factionId, t, cam),
+		userData: NewUserData(false, factionId, t, cam),
 	}
 }
 
@@ -178,7 +180,7 @@ func (ai *AI2) update() {
 	}
 	fmt.Printf(" done\n")
 
-	event.Go(event.EventGameSubmitUser, ai.id)
+	event.Go(event.EventGameSubmitUser, ai.factionId)
 }
 
 type AI3 struct {
@@ -186,9 +188,9 @@ type AI3 struct {
 	tries int
 }
 
-func NewAI3(id int, factionId int, t *field.Timeline, cam *util.Camera, tries int) *AI3 {
+func NewAI3(factionId int, t *field.Timeline, cam *util.Camera, tries int) *AI3 {
 	return &AI3{
-		userData: NewUserData(false, id, factionId, t, cam),
+		userData: NewUserData(false, factionId, t, cam),
 		tries:    tries,
 	}
 }
@@ -282,5 +284,5 @@ func (ai *AI3) update() {
 	}
 	fmt.Printf(" done\n")
 
-	event.Go(event.EventGameSubmitUser, ai.id)
+	event.Go(event.EventGameSubmitUser, ai.factionId)
 }

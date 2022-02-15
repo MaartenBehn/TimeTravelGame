@@ -1,10 +1,8 @@
 package game
 
 import (
-	"fmt"
 	"github.com/Stroby241/TimeTravelGame/src/event"
 	"github.com/Stroby241/TimeTravelGame/src/field"
-	. "github.com/Stroby241/TimeTravelGame/src/math"
 	"github.com/Stroby241/TimeTravelGame/src/ui"
 	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -23,17 +21,18 @@ type game struct {
 func load(data interface{}) {
 	g := &game{
 		t:    field.Load(data.(string)),
-		cam:  util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10}),
 		done: false,
 	}
 
 	users = []user{
-		NewPlayer(0, 0, g.t, util.NewCamera(CardPos{0, 0}, CardPos{50000, 50000}, CardPos{1, 1}, CardPos{10, 10})),
-		NewAI3(1, 1, g.t, g.cam, 10000),
+		NewPlayer(0, g.t),
+		NewPlayer(1, g.t),
 	}
 
-	playerIds = []int{0}
-	aktiveUser = 0
+	event.On(event.EventGameCurrentUser, func(data interface{}) {
+		aktiveUser = data.(int)
+	})
+	event.Go(event.EventGameCurrentUser, 0)
 
 	updateId := event.On(event.EventUpdate, func(data interface{}) {
 		if g.done {
@@ -47,7 +46,7 @@ func load(data interface{}) {
 		g.draw(data.(*ebiten.Image))
 	})
 
-	uiSubmitId := event.On(event.EventGameUISubmitRound, func(data interface{}) {
+	uiSubmitId := event.On(event.EventGameUISubmit, func(data interface{}) {
 		if users[aktiveUser].isPlayer() {
 			event.Go(event.EventGameSubmitUser, aktiveUser)
 		}
@@ -60,8 +59,7 @@ func load(data interface{}) {
 
 		if data.(int) == aktiveUser {
 
-			aktiveUser++
-			if aktiveUser >= len(users) {
+			if aktiveUser >= len(users)-1 {
 				g.t.SubmitRound()
 				g.t.Update()
 
@@ -78,11 +76,13 @@ func load(data interface{}) {
 				}
 
 				if won >= 0 {
-					fmt.Printf("Player %d won.\n", won)
+					event.Go(event.EventGameWon, won)
 					g.done = true
 				}
 
-				aktiveUser = 0
+				event.Go(event.EventGameCurrentUser, 0)
+			} else {
+				event.Go(event.EventGameCurrentUser, aktiveUser+1)
 			}
 		}
 	})
@@ -92,7 +92,7 @@ func load(data interface{}) {
 		event.UnOn(event.EventUpdate, updateId)
 		event.UnOn(event.EventDraw, drawId)
 
-		event.UnOn(event.EventGameUISubmitRound, uiSubmitId)
+		event.UnOn(event.EventGameUISubmit, uiSubmitId)
 		event.UnOn(event.EventGameSubmitUser, userSubmitId)
 
 		event.UnOn(event.EventGameUnload, unloadId)
@@ -104,7 +104,6 @@ func load(data interface{}) {
 }
 
 var users []user
-var playerIds []int
 var aktiveUser int
 
 func (g *game) update() {

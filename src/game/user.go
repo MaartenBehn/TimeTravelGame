@@ -10,24 +10,21 @@ type user interface {
 	isPlayer() bool
 	getScore() int
 	evaluate()
-
 	update()
 	draw(screen *ebiten.Image)
 }
 
 type userData struct {
 	player    bool
-	id        int
 	factionId int
 	t         *field.Timeline
 	cam       *util.Camera
 	score     int
 }
 
-func NewUserData(player bool, id int, factionId int, t *field.Timeline, cam *util.Camera) userData {
+func NewUserData(player bool, factionId int, t *field.Timeline, cam *util.Camera) userData {
 	return userData{
 		player:    player,
-		id:        id,
 		factionId: factionId,
 		t:         t,
 		cam:       cam,

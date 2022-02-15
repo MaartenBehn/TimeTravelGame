@@ -1,38 +1,9 @@
 package field
 
 import (
+	"github.com/Stroby241/TimeTravelGame/src/util"
 	"github.com/hajimehoshi/ebiten/v2"
-	"golang.org/x/image/colornames"
-	"image/color"
 )
-
-type Fraction struct {
-	name       string
-	color      color.Color
-	colorLigth color.Color
-
-	Images map[string]*ebiten.Image
-}
-
-var Fractions = []Fraction{
-	{
-		name:  "red",
-		color: colornames.Red,
-	},
-	{
-		name:  "blue",
-		color: colornames.Blue,
-	},
-}
-
-func getFractionIndex(f *Fraction) int {
-	for i, fraction := range Fractions {
-		if fraction.name == f.name {
-			return i
-		}
-	}
-	return -1
-}
 
 type Unit struct {
 	TimePos
@@ -51,7 +22,7 @@ func NewUnit(pos TimePos, factionId int, pattern MovePattern) *Unit {
 	}
 }
 
-func (u *Unit) draw(img *ebiten.Image, fraction *Fraction) {
+func (u *Unit) draw(img *ebiten.Image, fraction *util.Fraction) {
 
 	w, h := fraction.Images["unit"].Size()
 
@@ -83,10 +54,10 @@ func (t *Timeline) GetUnitAtPos(pos TimePos) (int, *Unit) {
 	return -1, nil
 }
 
-func (t *Timeline) AddUnitAtTile(pos TimePos, fraction *Fraction) *Unit {
+func (t *Timeline) AddUnitAtTile(pos TimePos, fraction *util.Fraction) *Unit {
 	_, unit := t.GetUnitAtPos(pos)
 	if unit == nil {
-		id := getFractionIndex(fraction)
+		id := util.GetFractionIndex(fraction)
 
 		unit = NewUnit(pos, id, BasicMovePattern{Stride: 1})
 		t.Units = append(t.Units, unit)
