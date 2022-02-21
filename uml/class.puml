@@ -199,15 +199,6 @@ namespace field {
     Field --> "n" Tile
     Field --> math.CardPos
 
-    class Fraction << (S,Aquamarine) >> {
-        - name string
-        - color color.Color
-        - colorLigth color.Color
-
-        + Images <font color=blue>map</font>[string]*ebiten.Image
-
-    }
-
     interface MovePattern  {
         + GetPositions(pos TimePos, t *Timeline) []TimePos
 
@@ -260,7 +251,6 @@ namespace field {
     targetPos --> "n" Unit
 
     TimePos -[hidden] customColor
-    customColor -[hidden] Fraction
 
     TimePos *.. Action
     TimePos *.. Selector
@@ -356,6 +346,15 @@ namespace util {
         + Close() 
 
     }
+
+    class Fraction << (S,Aquamarine) >> {
+            - name string
+            - color color.Color
+            - colorLigth color.Color
+
+            + Images <font color=blue>map</font>[string]*ebiten.Image
+
+        }
 
 
 }
